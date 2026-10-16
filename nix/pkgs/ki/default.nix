@@ -1,13 +1,13 @@
 {
   lib,
-  python3Packages,
+  python3,
   anki,
 
   root,
   version ? "dev",
 }:
 
-python3Packages.buildPythonApplication {
+python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "ki";
   pyproject = true;
   inherit version;
@@ -15,14 +15,14 @@ python3Packages.buildPythonApplication {
   # local source directory, filtered to avoid unnecessary rebuilds
   src = lib.cleanSource root;
 
-  build-system = with python3Packages; [
+  build-system = with python3.pkgs; [
     setuptools
   ];
 
   dependencies = [
     anki
   ]
-  ++ (with python3Packages; [
+  ++ (with python3.pkgs; [
     beartype
     colorama
     git-filter-repo
@@ -32,7 +32,7 @@ python3Packages.buildPythonApplication {
     whatthepatch
   ]);
 
-  nativeCheckInputs = with python3Packages; [
+  nativeCheckInputs = with python3.pkgs; [
     bitstring
     checksumdir
     gitpython
@@ -49,10 +49,14 @@ python3Packages.buildPythonApplication {
 
   dontCheckRuntimeDeps = true;
 
+  passthru = {
+    pyEnv = python3.withPackages (_ps: finalAttrs.passthru.dependencies);
+  };
+
   meta = {
     description = "Version control for Anki collections";
     homepage = "https://github.com/langfield/ki";
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ eljamm ];
   };
-}
+})

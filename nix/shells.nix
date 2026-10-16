@@ -1,5 +1,6 @@
 {
   pkgs,
+  default,
   formatter,
   ...
 }:
@@ -10,6 +11,7 @@
     ];
 
     packages = with pkgs; [
+      default.devPkgs.ki.pyEnv
       formatter.package
       gitMinimal
     ];
