@@ -3,7 +3,8 @@
     url = "https://github.com/fricklerhandwerk/flake-inputs/tarball/4.1.0";
     sha256 = "1j57avx2mqjnhrsgq3xl7ih8v7bdhz1kj3min6364f486ys048bm";
   }),
-  flakeSelf ? flake-inputs.import-flake { src = ./.; },
+  root ? ./.,
+  flakeSelf ? flake-inputs.import-flake { src = root; },
   inputs ? flakeSelf.inputs,
   system ? builtins.currentSystem,
   pkgs ? import inputs.nixpkgs {
@@ -18,6 +19,7 @@ let
     inherit
       lib
       pkgs
+      root
       inputs
       flake
       flakeSelf
@@ -28,7 +30,8 @@ let
     formatter = self.callPackage ./nix/formatter.nix { };
     shells = self.callPackage ./nix/shells.nix { };
 
-    devPkgs = {
+    devPkgs = lib.filterAttrs (n: v: lib.isDerivation v) {
+      ki = self.callPackage ./nix/pkgs/ki { inherit root; };
     };
 
     overlays = {
@@ -38,4 +41,4 @@ let
 
   flake = default.callPackage ./nix/flake { };
 in
-default
+default // default.devPkgs
