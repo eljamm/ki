@@ -14,6 +14,7 @@
       default.devPkgs.ki.pyEnv
       formatter.package
       gitMinimal
+      uv
     ];
 
     shellHook = # bash
