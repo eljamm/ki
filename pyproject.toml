@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ki"
+version = "0.0.18a"
+description = "version control for Anki collections"
+readme = "README.md"
+license = "AGPL-3.0-only"
+requires-python = ">=3.13"
+dynamic = ["dependencies"]
+
+[project.urls]
+Homepage = "https://langfield.github.io/ki"
+
+[project.scripts]
+ki = "ki:ki"
+
+[tool.setuptools]
+packages = ["ki"]
+# NOTE: using this field is discouraged [1^], but `subdeck` is a bash script
+# which we need to copy, so we can't have it in `project.scripts`.
+#
+# [1^]: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+script-files = ["subdeck"]
+
+[tool.setuptools.package-data]
+ki = ["grammar.lark", "jekyll-gh-pages.yml"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
