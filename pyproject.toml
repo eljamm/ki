@@ -23,7 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest==7.1.2",
+  "pytest==9.1.1",
   "pytest-mock",
   "pytest-timeout",
   "checksumdir==1.2.0",
