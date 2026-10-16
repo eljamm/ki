@@ -40,7 +40,6 @@ import git
 from anki.cards import Card
 from anki.collection import Collection, Note, OpChangesWithId
 from anki.errors import NotFoundError
-from anki.importing.noteimp import NoteImporter
 from anki.models import NotetypeDict
 from anki.utils import ids2str
 from beartype import beartype
@@ -621,8 +620,8 @@ def add_db_note(
     data: str,
 ) -> Note:
     """Add a note to the database directly, with a SQL INSERT."""
-    importer = NoteImporter(col, "")
-    importer.addNew(
+    col.db.executemany(
+        "insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)",
         [
             (
                 nid,
