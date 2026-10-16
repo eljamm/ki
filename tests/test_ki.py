@@ -1566,10 +1566,10 @@ def test_diff2_handles_paths_containing_colons(tmp_path: Path):
     file = F.chk(tgt / "a:b" / "file")
     file.write_text("a", encoding="UTF-8")
     repo.git.add(all=True)
-    repo.index.commit("Initial commit.")
+    repo.git.commit("-m", "Initial commit.")
     file.write_text("b", encoding="UTF-8")
     repo.git.add(all=True)
-    repo.index.commit("Edit file.")
+    repo.git.commit("-m", "Edit file.")
     parse = partial(parse_note, parser, transformer)
     diff2(repo, parse)
 
