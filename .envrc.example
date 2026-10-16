@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+watch_file \
+    default.nix \
+    flake.nix
+
+watch_dir \
+    nix
+
+nix_direnv_manual_reload
+use nix -A shells.default
