@@ -7,5 +7,13 @@ watch_file \
 watch_dir \
     nix
 
+# By default, direnv automatically reloads the environment when any of the
+# watched files change, which may waste resources depending on how frequently
+# they're modified.
+#
+# Setting this line lets you control when the the environment is reloaded
+# (through the `nix-direnv-reload` command), and thus gives you greater control
+# at the cost of convenience.
 nix_direnv_manual_reload
+
 use nix -A shells.default
