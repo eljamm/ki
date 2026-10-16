@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """A Lark transformer for the ki note grammar."""
+
 import re
 from dataclasses import dataclass
 
-from lark import Transformer
-from lark.lexer import Token
-
 from beartype import beartype
 from beartype.typing import (
-    List,
     Dict,
+    List,
     Optional,
     Union,
 )
+from lark import Transformer
+from lark.lexer import Token
 
 # pylint: disable=invalid-name, too-few-public-methods
 
@@ -75,6 +75,7 @@ class NoteTransformer(Transformer):
           Back
         s
     """
+
     # pylint: disable=missing-function-docstring
 
     @beartype

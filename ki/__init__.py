@@ -13,113 +13,111 @@ decks in exactly the same way they work on large, complex software projects.
 # pylint: disable=too-many-return-statements, too-many-lines, too-many-arguments
 # pylint: disable=no-value-for-parameter, not-callable, unnecessary-lambda-assignment
 
-import os
-import re
+import configparser
+import copy
+import datetime
 import gc
+import hashlib
+import itertools
+import json
+import logging
+import os
+import random
+import re
+import sqlite3
+import subprocess
 import sys
 import time
-import json
-import copy
-import random
-import logging
-import sqlite3
-import hashlib
-import datetime
-import itertools
-import subprocess
-import configparser
-from pathlib import Path
-from itertools import chain, starmap, tee
-from functools import reduce
 from collections import namedtuple
-
-import git
-import click
-from lark import Lark
+from functools import reduce
+from itertools import chain, starmap, tee
+from pathlib import Path
 
 # Required to avoid circular imports because the Anki pylib codebase is gross.
 import anki.collection
+import click
+import git
 from anki.cards import Card
-from anki.utils import ids2str
-from anki.models import NotetypeDict
-from anki.errors import NotFoundError
 from anki.collection import Collection, Note, OpChangesWithId
+from anki.errors import NotFoundError
 from anki.importing.noteimp import NoteImporter
-
+from anki.models import NotetypeDict
+from anki.utils import ids2str
 from beartype import beartype
 from beartype.typing import (
-    Set,
-    List,
-    Dict,
     Any,
-    Optional,
     Callable,
-    Union,
-    TypeVar,
-    Tuple,
-    Iterator,
-    Iterable,
+    Dict,
     FrozenSet,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
 )
+from lark import Lark
 
-import ki.maybes as M
 import ki.functional as F
-from ki.types import (
-    MODELS_FILE,
-    File,
-    Dir,
-    EmptyDir,
-    NoPath,
-    NoFile,
-    GitChangeType,
-    Delta,
-    KiRepo,
-    Notetype,
-    ColNote,
-    KiRev,
-    Rev,
-    Deck,
-    Root,
-    DotKi,
-    CardFile,
-    NoteDBRow,
-    DeckNote,
-    NoteMetadata,
-    PushResult,
-    PlannedLink,
-    MediaBytes,
-    AddedMedia,
-    UpdatesRejectedError,
-    TargetExistsError,
-    CollectionChecksumError,
-    MissingNotetypeError,
-    NotetypeMismatchError,
-    NoteFieldValidationWarning,
-    DeletedFileNotFoundWarning,
-    DiffTargetFileNotFoundWarning,
-    NotetypeCollisionWarning,
-    SQLiteLockError,
-    MissingMediaDirectoryError,
-    WrongFieldCountWarning,
-    InconsistentFieldNamesWarning,
-    AnkiDBNoteMissingFieldsError,
-    RenamedMediaFileWarning,
-    NonEmptyWorkingTreeError,
-    EmptyNoteWarning,
-    DuplicateNoteWarning,
-    UnhealthyNoteWarning,
-    MediaDirectoryDeckNameCollisionWarning,
-    notetype_json,
-)
+import ki.maybes as M
 from ki.maybes import (
+    BACKUPS_DIR,
     GIT,
     GITIGNORE_FILE,
     GITMODULES_FILE,
-    KI,
     HASHES_FILE,
-    BACKUPS_DIR,
+    KI,
 )
-from ki.transformer import NoteTransformer, FlatNote
+from ki.transformer import FlatNote, NoteTransformer
+from ki.types import (
+    MODELS_FILE,
+    AddedMedia,
+    AnkiDBNoteMissingFieldsError,
+    CardFile,
+    CollectionChecksumError,
+    ColNote,
+    Deck,
+    DeckNote,
+    DeletedFileNotFoundWarning,
+    Delta,
+    DiffTargetFileNotFoundWarning,
+    Dir,
+    DotKi,
+    DuplicateNoteWarning,
+    EmptyDir,
+    EmptyNoteWarning,
+    File,
+    GitChangeType,
+    InconsistentFieldNamesWarning,
+    KiRepo,
+    KiRev,
+    MediaBytes,
+    MediaDirectoryDeckNameCollisionWarning,
+    MissingMediaDirectoryError,
+    MissingNotetypeError,
+    NoFile,
+    NonEmptyWorkingTreeError,
+    NoPath,
+    NoteDBRow,
+    NoteFieldValidationWarning,
+    NoteMetadata,
+    Notetype,
+    NotetypeCollisionWarning,
+    NotetypeMismatchError,
+    PlannedLink,
+    PushResult,
+    RenamedMediaFileWarning,
+    Rev,
+    Root,
+    SQLiteLockError,
+    TargetExistsError,
+    UnhealthyNoteWarning,
+    UpdatesRejectedError,
+    WrongFieldCountWarning,
+    notetype_json,
+)
 
 curried = F.curried
 
@@ -1080,7 +1078,7 @@ def html_to_screen(html: str) -> str:
     Does very litle (just converts HTML-escaped special characters like `<br>`
     tags or `&nbsp;`s to their UTF-8 equivalents).
     """
-    html = re.sub(r"\<style\>.*\<\/style\>", "", html, flags=re.S)
+    html = re.sub(r"\<style\>.*\<\/style\>", "", html, flags=re.DOTALL)
     plain = html
 
     # For convenience: Un-escape some common LaTeX constructs.
@@ -1145,7 +1143,7 @@ def echo(string: str, silent: bool = False) -> None:
 @beartype
 def warn(w: Warning) -> None:
     """Call `click.secho()` with formatting (yellow)."""
-    click.secho(f"WARNING: {str(w)}", bold=True, fg="yellow")
+    click.secho(f"WARNING: {w!s}", bold=True, fg="yellow")
 
 
 @beartype

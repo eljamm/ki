@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """Types for ki."""
+
+import dataclasses
 import json
 import sqlite3
 import textwrap
-import dataclasses
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from dataclasses import dataclass
 
 import git
 import whatthepatch
+from anki.collection import Card, Note
 from anki.decks import DeckTreeNode
-from anki.collection import Note, Card
-
 from beartype import beartype
-from beartype.typing import List, Dict, Any, Optional, Union
+from beartype.typing import Any, Dict, List, Optional, Union
 
 # pylint: disable=too-many-lines, missing-class-docstring, too-many-instance-attributes
 
@@ -566,7 +566,7 @@ class SQLiteLockError(RuntimeError):
         header = "Unexpected SQLite3 error while attempting to acquire lock on file: "
         header += f"'{col_file}':"
         msg = f"""
-        A 'sqlite3.DatabaseError' was raised with error message: '{str(err)}'.
+        A 'sqlite3.DatabaseError' was raised with error message: '{err!s}'.
         This may indicate that either the database file at the location
         specified above is corrupted, or the config file at '.ki/config' is
         pointing to the wrong location. (The latter may occur in the unlikely

@@ -1,24 +1,21 @@
 """Compile a deck."""
-#!/usr/bin/env python3
-import re
-import os
-import json
-import shutil
-import zipfile
-import argparse
-import unicodedata
 
-from beartype import beartype
-from beartype.typing import List, Dict
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import re
+import shutil
+import unicodedata
+import zipfile
 
 # pylint: disable=unused-import
-import anki.collection
-
 # pylint: enable=unused-import
-
 from anki import hooks
-from anki.exporting import AnkiExporter
 from anki.collection import Collection
+from anki.exporting import AnkiExporter
+from beartype import beartype
+from beartype.typing import Dict, List
 
 
 class AnkiPackageExporter(AnkiExporter):

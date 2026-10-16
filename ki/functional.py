@@ -4,48 +4,47 @@
 # pylint: disable=import-self, too-many-return-statements
 # pylint: disable=no-value-for-parameter
 
+import functools
+import hashlib
 import os
 import re
-import sys
 import shutil
-import hashlib
-import tempfile
-import functools
 import subprocess
+import sys
+import tempfile
 import unicodedata
-from pathlib import Path
+from functools import partial, reduce, update_wrapper, wraps
 from itertools import chain
-from functools import reduce, partial, update_wrapper, wraps
+from pathlib import Path
 
 import git
-from tqdm import tqdm
-from colorama import Fore, Style
-
 from beartype import beartype
 from beartype.typing import (
-    List,
-    Union,
-    Generator,
-    Tuple,
-    Callable,
     Any,
+    Callable,
     FrozenSet,
+    Generator,
     Iterable,
+    List,
+    Tuple,
     TypeVar,
+    Union,
 )
+from colorama import Fore, Style
+from tqdm import tqdm
 
 import ki.functional as F
 from ki.types import (
-    File,
     Dir,
     EmptyDir,
-    NoPath,
-    NoFile,
-    Link,
-    Singleton,
-    PseudoFile,
+    File,
     KiRev,
+    Link,
+    NoFile,
+    NoPath,
+    PseudoFile,
     Rev,
+    Singleton,
 )
 
 _has_type_hint_support = sys.version_info[:2] >= (3, 5)
@@ -60,10 +59,10 @@ STDOUT = subprocess.STDOUT
 BRANCH_NAME = "main"
 
 # Emoji regex character classes.
-EMOJIS = "\U0001F600-\U0001F64F"
-PICTOGRAPHS = "\U0001F300-\U0001F5FF"
-TRANSPORTS = "\U0001F680-\U0001F6FF"
-FLAGS = "\U0001F1E0-\U0001F1FF"
+EMOJIS = "\U0001f600-\U0001f64f"
+PICTOGRAPHS = "\U0001f300-\U0001f5ff"
+TRANSPORTS = "\U0001f680-\U0001f6ff"
+FLAGS = "\U0001f1e0-\U0001f1ff"
 
 # Regex to filter out bad stuff from filenames.
 SLUG_REGEX = re.compile(r"[^\w\s\-" + EMOJIS + PICTOGRAPHS + TRANSPORTS + FLAGS + "]")

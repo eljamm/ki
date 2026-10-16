@@ -1,66 +1,61 @@
 #!/usr/bin/env python3
 """Tests for ki command line interface (CLI)."""
-import os
+
 import gc
+import os
 import shutil
 import sqlite3
-import tempfile
 import subprocess
-from pathlib import Path
-from setuptools._distutils.dir_util import copy_tree
+import tempfile
 from importlib.metadata import version
+from pathlib import Path
 
 import git
 import pytest
-from loguru import logger
-from pytest_mock import MockerFixture
-
-import anki
 from anki.collection import Collection
-
 from beartype.typing import List
+from pytest_mock import MockerFixture
+from setuptools._distutils.dir_util import copy_tree
 
 import ki
 import ki.functional as F
-from ki import MEDIA, LCA, _clone1, do
+from ki import LCA, MEDIA, _clone1, do
 from ki.types import (
-    Notetype,
+    AnkiAlreadyOpenError,
+    CollectionChecksumError,
     ColNote,
     File,
-    TargetExistsError,
-    NotKiRepoError,
-    UpdatesRejectedError,
-    SQLiteLockError,
     GitHeadRefNotFoundError,
-    CollectionChecksumError,
     MissingFieldOrdinalError,
-    AnkiAlreadyOpenError,
+    Notetype,
+    NotKiRepoError,
+    SQLiteLockError,
+    TargetExistsError,
+    UpdatesRejectedError,
 )
 from tests.test_ki import (
-    GITREPO_PATH,
-    invoke,
-    clone,
-    pull,
-    push,
-    is_git_repo,
-    randomly_swap_1_bit,
-    checksum_git_repository,
-    get_notes,
-    get_test_collection,
-    SampleCollection,
     DATA,
-    read,
-    write,
+    GITREPO_PATH,
+    SampleCollection,
     append,
-    opencol,
-    mkcol,
+    checksum_git_repository,
+    clone,
     edit,
     editcol,
+    get_notes,
+    get_test_collection,
+    invoke,
+    is_git_repo,
     mkbasic,
+    mkcol,
+    opencol,
+    pull,
+    push,
+    randomly_swap_1_bit,
+    read,
+    write,
     write_basic,
-    runcmd,
 )
-
 
 # pylint: disable=unnecessary-pass, too-many-lines, invalid-name, duplicate-code
 # pylint: disable=missing-function-docstring, too-many-locals, no-value-for-parameter

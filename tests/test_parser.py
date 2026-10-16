@@ -1,18 +1,17 @@
 """Tests for markdown note Lark grammar."""
+
 from pathlib import Path
 
 import pytest
-
-from loguru import logger
 from beartype import beartype
-
 from lark import Lark
 from lark.exceptions import (
-    UnexpectedToken,
-    UnexpectedInput,
     UnexpectedCharacters,
+    UnexpectedInput,
+    UnexpectedToken,
     VisitError,
 )
+from loguru import logger
 
 import ki
 from ki import NoteTransformer
@@ -142,7 +141,7 @@ def test_too_few_hashes_for_fieldname():
     assert err.line == 11
     assert err.column == 1
     assert err.token == "#"
-    assert "* \"##\"" in err._format_expected(err.expected)
+    assert '* "##"' in err._format_expected(err.expected)
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "\n"
@@ -377,7 +376,7 @@ def test_bad_field_multi_char_name_validation():
         assert str(prev) == fieldname[:2]
         if isinstance(err, UnexpectedToken):
             assert err.token in fieldname[2:] + "\n"
-            assert "* \"##\"" in err._format_expected(err.expected)
+            assert '* "##"' in err._format_expected(err.expected)
             assert "* FIELDLINE" in err._format_expected(err.expected)
         if isinstance(err, UnexpectedCharacters):
             assert err.char == char
@@ -544,7 +543,7 @@ def test_header_needs_two_trailing_newlines():
     assert err.line == 11
     assert err.column == 1
     assert err.token == "\n"
-    assert "* \"##\"" in err._format_expected(err.expected)
+    assert '* "##"' in err._format_expected(err.expected)
 
 
 ONE_POST_NON_TERMINATING_FIELD_NEWLINE = r"""# a

@@ -1,5 +1,7 @@
 """Cat GUIDs."""
+
 import sys
+
 from anki.collection import Collection
 
 

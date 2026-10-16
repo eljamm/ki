@@ -5,63 +5,62 @@
 # pylint: disable=too-many-return-statements, too-many-lines, import-self
 # pylint: disable=no-value-for-parameter
 
+import configparser
 import re
 import traceback
-import configparser
 from pathlib import Path
 
-import git
-from lark import Lark
-from beartype import beartype
-from beartype.typing import Union, Dict, Any, List, Tuple, Iterable
-
 import anki
+import git
+from anki.collection import Collection
 from anki.decks import DeckTreeNode
 from anki.errors import NotFoundError
-from anki.collection import Collection
+from beartype import beartype
+from beartype.typing import Any, Dict, Iterable, List, Tuple, Union
+from lark import Lark
 
-import ki.maybes as M
 import ki.functional as F
+import ki.maybes as M
+from ki.transformer import NoteTransformer
 from ki.types import (
     MODELS_FILE,
-    File,
-    Dir,
-    EmptyDir,
-    NoPath,
-    NoFile,
-    Link,
-    PseudoFile,
-    KiRepo,
-    KiRev,
-    Rev,
-    Template,
-    Field,
+    AnkiAlreadyOpenError,
     ColNote,
     Deck,
-    Root,
+    Dir,
     DotKi,
-    PlannedLink,
-    Notetype,
-    Submodule,
-    NotetypeKeyError,
-    UnnamedNotetypeError,
-    MissingFieldOrdinalError,
-    MissingNoteIdError,
-    NoteFieldKeyError,
-    MissingFileError,
-    MissingDirectoryError,
-    ExpectedFileButGotDirectoryError,
+    EmptyDir,
     ExpectedDirectoryButGotFileError,
     ExpectedEmptyDirectoryButGotNonEmptyDirectoryError,
+    ExpectedFileButGotDirectoryError,
     ExpectedNonexistentPathError,
-    StrangeExtantPathError,
-    NotKiRepoError,
-    GitRefNotFoundError,
-    GitHeadRefNotFoundError,
+    Field,
+    File,
     GitFileModeParseError,
-    AnkiAlreadyOpenError,
+    GitHeadRefNotFoundError,
+    GitRefNotFoundError,
+    KiRepo,
+    KiRev,
+    Link,
+    MissingDirectoryError,
+    MissingFieldOrdinalError,
+    MissingFileError,
+    MissingNoteIdError,
+    NoFile,
+    NoPath,
+    NoteFieldKeyError,
+    Notetype,
+    NotetypeKeyError,
+    NotKiRepoError,
+    PlannedLink,
+    PseudoFile,
+    Rev,
+    Root,
+    StrangeExtantPathError,
+    Submodule,
+    Template,
+    UnnamedNotetypeError,
 )
-from ki.transformer import NoteTransformer
 
 curried = F.curried
 
@@ -471,7 +470,10 @@ def empty_kirepo(root: EmptyDir) -> Tuple[EmptyDir, EmptyDir]:
     kidir = F.mksubdir(root, Path(KI))
     mediadir = F.mksubdir(EmptyDir(root), Path(MEDIA))
     workflowsdir = F.mksubdir(EmptyDir(root), Path(".github/workflows"))
-    _ = F.copyfile(F.chk(Path(__file__).parent / "jekyll-gh-pages.yml"), F.chk(workflowsdir / "jekyll-gh-pages.yml.example"))
+    _ = F.copyfile(
+        F.chk(Path(__file__).parent / "jekyll-gh-pages.yml"),
+        F.chk(workflowsdir / "jekyll-gh-pages.yml.example"),
+    )
     return kidir, mediadir
 
 

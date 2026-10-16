@@ -1,131 +1,127 @@
 #!/usr/bin/env python3
 """Tests for ki command line interface (CLI)."""
-import os
-import io
+
+import contextlib
 import gc
-import sys
+import io
+import itertools
 import json
-import time
+import os
 import random
 import shutil
-import sqlite3
-import tempfile
-import itertools
 import subprocess
-import contextlib
-from pathlib import Path
-from functools import partial
+import sys
+import tempfile
+import time
 from dataclasses import dataclass
+from functools import partial
+from pathlib import Path
 
-import git
-import pytest
+import anki.collection
 import bitstring
 import checksumdir
+import git
+import pytest
+from anki.collection import Collection, Note
+from beartype import beartype
+from beartype.typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+)
+from click.testing import CliRunner
 from lark import Lark
 from lark.exceptions import UnexpectedToken
 from pytest_mock import MockerFixture
-from click.testing import CliRunner
-
-import anki.collection
-from anki.collection import Collection, Note
-
-from beartype import beartype
-from beartype.typing import (
-    List,
-    Union,
-    Set,
-    Iterator,
-    Tuple,
-    Callable,
-    Iterable,
-    Dict,
-    Any,
-    Optional,
-)
 
 import ki
-import ki.maybes as M
 import ki.functional as F
-from ki.functional import curried
+import ki.maybes as M
 from ki import (
+    BACKUPS_DIR,
     BRANCH_NAME,
+    GITIGNORE_FILE,
+    HASHES_FILE,
+    HEAD_SUFFIX,
     KI,
     LCA,
-    UTF8,
     MEDIA,
-    HEAD_SUFFIX,
-    REMOTE_SUFFIX,
-    HASHES_FILE,
     MODELS_FILE,
-    GITIGNORE_FILE,
-    BACKUPS_DIR,
-    NotetypeDict,
-    DeckNote,
-    GitChangeType,
-    Notetype,
+    REMOTE_SUFFIX,
+    UTF8,
     ColNote,
+    DeckNote,
     Delta,
     Dir,
-    File,
+    DotKi,
     EmptyDir,
+    File,
+    GitChangeType,
+    KiRepo,
+    Notetype,
+    NotetypeDict,
     NotetypeMismatchError,
     UnhealthyNoteWarning,
-    KiRepo,
-    DotKi,
-    is_ignorable,
-    cp_ki,
-    get_note_payload,
-    get_note_path,
-    backup,
-    update_note,
-    check_fields_health,
-    is_anki_note,
-    parse_note,
-    write_repository,
-    get_target,
-    push_note,
-    get_models_recursively,
-    append_md5sum,
-    copy_media_files,
-    diff2,
-    _clone2,
-    add_db_note,
-    media_filenames_in_field,
-    write_decks,
-    write_collection,
     _clone1,
+    _clone2,
     _pull1,
     _push,
-    get_guid,
+    add_db_note,
+    append_md5sum,
+    backup,
+    check_fields_health,
+    copy_media_files,
+    cp_ki,
+    diff2,
     do,
+    get_guid,
+    get_models_recursively,
+    get_note_path,
+    get_note_payload,
+    get_target,
+    is_anki_note,
+    is_ignorable,
+    media_filenames_in_field,
+    parse_note,
+    push_note,
     stardo,
+    update_note,
+    write_collection,
+    write_decks,
+    write_repository,
 )
+from ki.functional import curried
 from ki.maybes import CONFIG_FILE
-from ki.types import (
-    NoFile,
-    PseudoFile,
-    ExpectedEmptyDirectoryButGotNonEmptyDirectoryError,
-    StrangeExtantPathError,
-    MissingNotetypeError,
-    MissingFieldOrdinalError,
-    MissingNoteIdError,
-    DiffTargetFileNotFoundWarning,
-    NotetypeKeyError,
-    UnnamedNotetypeError,
-    NoteFieldKeyError,
-    ExpectedDirectoryButGotFileError,
-    GitHeadRefNotFoundError,
-    MissingMediaDirectoryError,
-    TargetExistsError,
-    WrongFieldCountWarning,
-    InconsistentFieldNamesWarning,
-    UpdatesRejectedError,
-    MediaDirectoryDeckNameCollisionWarning,
-    EmptyNoteWarning,
-    AnkiAlreadyOpenError,
-)
 from ki.transformer import NoteTransformer
-
+from ki.types import (
+    AnkiAlreadyOpenError,
+    DiffTargetFileNotFoundWarning,
+    EmptyNoteWarning,
+    ExpectedDirectoryButGotFileError,
+    ExpectedEmptyDirectoryButGotNonEmptyDirectoryError,
+    GitHeadRefNotFoundError,
+    InconsistentFieldNamesWarning,
+    MissingFieldOrdinalError,
+    MissingMediaDirectoryError,
+    MissingNoteIdError,
+    MissingNotetypeError,
+    NoFile,
+    NoteFieldKeyError,
+    NotetypeKeyError,
+    PseudoFile,
+    StrangeExtantPathError,
+    TargetExistsError,
+    UnnamedNotetypeError,
+    UpdatesRejectedError,
+    WrongFieldCountWarning,
+)
 
 # pylint: disable=unnecessary-pass, too-many-lines, invalid-name
 # pylint: disable=missing-function-docstring, too-many-instance-attributes
