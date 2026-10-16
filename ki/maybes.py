@@ -16,7 +16,7 @@ from anki.collection import Collection
 from anki.decks import DeckTreeNode
 from anki.errors import NotFoundError
 from beartype import beartype
-from beartype.typing import Any, Dict, Iterable, List, Tuple, Union
+from beartype.typing import Any, Iterable
 from lark import Lark
 
 import ki.functional as F
@@ -297,7 +297,7 @@ def hardlink(l: Link) -> File:
 
 
 @beartype
-def filemode(file: Union[File, Dir, PseudoFile, Link]) -> int:
+def filemode(file: File | Dir | PseudoFile | Link) -> int:
     """Get git file mode."""
     try:
         # We must search from file upwards in case inside submodule.
@@ -315,7 +315,7 @@ def filemode(file: Union[File, Dir, PseudoFile, Link]) -> int:
 
 
 @beartype
-def template(t: Dict[str, Any]) -> Template:
+def template(t: dict[str, Any]) -> Template:
     """Construct a template."""
     # pylint: disable=redefined-builtin
     name, qfmt, afmt, ord = t["name"], t["qfmt"], t["afmt"], t["ord"]
@@ -323,13 +323,13 @@ def template(t: Dict[str, Any]) -> Template:
 
 
 @beartype
-def field(fld: Dict[str, Any]) -> Field:
+def field(fld: dict[str, Any]) -> Field:
     """Construct a field."""
     return Field(name=fld["name"], ord=fld["ord"])
 
 
 @beartype
-def notetype(nt: Dict[str, Any]) -> Notetype:
+def notetype(nt: dict[str, Any]) -> Notetype:
     """
     Convert an Anki NotetypeDict into a Notetype dataclass.
 
@@ -355,7 +355,7 @@ def notetype(nt: Dict[str, Any]) -> Notetype:
     except KeyError as err:
         raise UnnamedNotetypeError(nt) from err
     try:
-        fields: Dict[int, Field] = {fld["ord"]: M.field(fld) for fld in nt["flds"]}
+        fields: dict[int, Field] = {fld["ord"]: M.field(fld) for fld in nt["flds"]}
         if nt["sortf"] not in fields:
             raise MissingFieldOrdinalError(ord=nt["sortf"], model=nt["name"])
         return Notetype(
@@ -424,11 +424,11 @@ def deckd(deck_name: str, targetdir: Dir) -> Dir:
 
 @curried
 @beartype
-def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Union[Root, Deck]:
+def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root | Deck:
     """Get the deck directory and did for a decknode."""
     did = root.deck_id
     name = col.decks.name(did)
-    children: List[Deck] = list(map(M.tree(col, targetd), root.children))
+    children: list[Deck] = list(map(M.tree(col, targetd), root.children))
     if root.deck_id == 0:
         deckdir, mediadir = None, None
         return Root(
@@ -465,7 +465,7 @@ def link(targetd: Dir, l: PlannedLink) -> None:
 
 
 @beartype
-def empty_kirepo(root: EmptyDir) -> Tuple[EmptyDir, EmptyDir]:
+def empty_kirepo(root: EmptyDir) -> tuple[EmptyDir, EmptyDir]:
     """Initialize subdirs for a ki repo."""
     kidir = F.mksubdir(root, Path(KI))
     mediadir = F.mksubdir(EmptyDir(root), Path(MEDIA))
@@ -505,7 +505,7 @@ def submodule(parent_repo: git.Repo, sm: git.Submodule) -> Submodule:
 
 
 @beartype
-def submodules(r: git.Repo) -> Dict[Path, Submodule]:
+def submodules(r: git.Repo) -> dict[Path, Submodule]:
     """Map submodule relative roots to `Submodule`s."""
     sms: Iterable[git.Submodule] = r.submodules
     sms = filter(lambda sm: sm.exists() and sm.module_exists(), sms)
@@ -535,7 +535,7 @@ def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
 
 
 @beartype
-def parser_and_transformer() -> Tuple[Lark, NoteTransformer]:
+def parser_and_transformer() -> tuple[Lark, NoteTransformer]:
     """Read grammar."""
     # TODO: Should we assume this always exists? A nice error message should be
     # printed on initialization if the grammar file is missing. No computation

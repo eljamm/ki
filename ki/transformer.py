@@ -5,12 +5,6 @@ import re
 from dataclasses import dataclass
 
 from beartype import beartype
-from beartype.typing import (
-    Dict,
-    List,
-    Optional,
-    Union,
-)
 from lark import Transformer
 from lark.lexer import Token
 
@@ -46,8 +40,8 @@ class FlatNote:
     title: str
     guid: str
     model: str
-    tags: List[str]
-    fields: Dict[str, str]
+    tags: list[str]
+    fields: dict[str, str]
 
 
 class NoteTransformer(Transformer):
@@ -79,7 +73,7 @@ class NoteTransformer(Transformer):
     # pylint: disable=missing-function-docstring
 
     @beartype
-    def note(self, n: List[Union[Header, List[str], Field]]) -> FlatNote:
+    def note(self, n: list[Header | list[str] | Field]) -> FlatNote:
         assert len(n) >= 3
 
         header = n[0]
@@ -89,7 +83,7 @@ class NoteTransformer(Transformer):
         assert isinstance(fields[0], Field)
 
         # We drop the first character because it is a newline.
-        fieldmap: Dict[str, str] = {}
+        fieldmap: dict[str, str] = {}
         for field in fields:
             fieldmap[field.title] = field.content[1:]
 
@@ -102,23 +96,23 @@ class NoteTransformer(Transformer):
         )
 
     @beartype
-    def header(self, h: List[str]) -> Header:
+    def header(self, h: list[str]) -> Header:
         h = filter(lambda s: s != BACKTICKS, h)
         return Header(*h)
 
     @beartype
-    def title(self, t: List[str]) -> str:
+    def title(self, t: list[str]) -> str:
         """``title: "##" TITLENAME "\n"+``"""
         assert len(t) == 1
         return t[0]
 
     @beartype
-    def tags(self, tags: List[Optional[str]]) -> List[str]:
+    def tags(self, tags: list[str | None]) -> list[str]:
         tags = filter(lambda t: t != BACKTICKS, tags)
         return [tag for tag in tags if tag is not None]
 
     @beartype
-    def field(self, f: List[str]) -> Field:
+    def field(self, f: list[str]) -> Field:
         assert len(f) >= 1
         fheader = f[0]
         lines = f[1:]
@@ -130,7 +124,7 @@ class NoteTransformer(Transformer):
         return Field(fheader, content[:-1])
 
     @beartype
-    def lastfield(self, f: List[str]) -> Field:
+    def lastfield(self, f: list[str]) -> Field:
         assert len(f) >= 1
         fheader = f[0]
         lines = f[1:]
@@ -140,7 +134,7 @@ class NoteTransformer(Transformer):
         return Field(fheader, content)
 
     @beartype
-    def fieldheader(self, f: List[str]) -> str:
+    def fieldheader(self, f: list[str]) -> str:
         """``fieldheader: "##" " "* ANKINAME "\n"+``"""
         assert len(f) == 1
         return f[0]

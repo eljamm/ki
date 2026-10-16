@@ -14,11 +14,11 @@ import whatthepatch
 from anki.collection import Card, Note
 from anki.decks import DeckTreeNode
 from beartype import beartype
-from beartype.typing import Any, Dict, List, Optional, Union
+from beartype.typing import Any
 
 # pylint: disable=too-many-lines, missing-class-docstring, too-many-instance-attributes
 
-NotetypeDict = Dict[str, Any]
+NotetypeDict = dict[str, Any]
 MODELS_FILE = "models.json"
 HINT = (
     "hint: Updates were rejected because the tip of your current branch is behind\n"
@@ -114,8 +114,8 @@ class DeckNote:
     guid: str
     deck: str
     model: str
-    tags: List[str]
-    fields: Dict[str, str]
+    tags: list[str]
+    fields: dict[str, str]
 
 
 @beartype
@@ -173,7 +173,7 @@ class Field:
     """A typechecked version of `anki.models.FieldDict` for use within ki."""
 
     name: str
-    ord: Optional[int]
+    ord: int | None
 
 
 @beartype
@@ -184,7 +184,7 @@ class Template:
     name: str
     qfmt: str
     afmt: str
-    ord: Optional[int]
+    ord: int | None
 
 
 @beartype
@@ -197,14 +197,14 @@ class Notetype:
     id: int
     name: str
     type: int
-    flds: List[Field]
-    tmpls: List[Template]
+    flds: list[Field]
+    tmpls: list[Template]
     sortf: Field
 
     # A copy of the `NotetypeDict` object as it was returned from the Anki
     # database. We keep this around to preserve extra keys that may not always
     # exist, but the ones above should be required for Anki to function.
-    dict: Dict[str, Any]
+    dict: dict[str, Any]
 
 
 @beartype
@@ -261,7 +261,7 @@ class Deck:
     node: DeckTreeNode
     deckd: Dir
     mediad: Dir
-    children: List["Deck"]
+    children: list["Deck"]
     fullname: str
 
 
@@ -272,7 +272,7 @@ class Root:
     node: DeckTreeNode
     deckd: None
     mediad: None
-    children: List[Deck]
+    children: list[Deck]
     fullname: str
 
 
@@ -282,7 +282,7 @@ class PlannedLink:
     """A not-yet-created symlink path and its extant target."""
 
     link: NoFile
-    tgt: Union[File, Link]
+    tgt: File | Link
 
 
 @beartype
@@ -330,7 +330,7 @@ class NoteDBRow:
     usn: int
     tags: str
     flds: str
-    sfld: Union[str, int]
+    sfld: str | int
     csum: int
     flags: int
     data: str
@@ -339,7 +339,7 @@ class NoteDBRow:
 @beartype
 def notetype_json(notetype: Notetype) -> str:
     """Return the JSON for a notetype as a string."""
-    dictionary: Dict[str, Any] = dataclasses.asdict(notetype)
+    dictionary: dict[str, Any] = dataclasses.asdict(notetype)
     dictionary.pop("id")
     inner = dictionary["dict"]
     inner.pop("id")
@@ -664,14 +664,14 @@ class NoteFieldValidationWarning(Warning):
         top = f"Warning: Bad field '{field}' for notetype '{notetype}' in note '{nid}'"
         msg = "Try correcting the field name or changing the notetype."
         msg += f"The fields for the notetype '{notetype}' are:"
-        fields: List[str] = [field.name for field in notetype.flds]
+        fields: list[str] = [field.name for field in notetype.flds]
         listing: str = "  " + "\n  ".join(fields)
         super().__init__(f"{top}\n{errwrap(msg)}\n{listing}")
 
 
 class WrongFieldCountWarning(Warning):
     @beartype
-    def __init__(self, decknote: DeckNote, names: List[str]):
+    def __init__(self, decknote: DeckNote, names: list[str]):
         top = f"Warning: Wrong number of fields for model '{decknote.model}'"
         msg = f"""
         The notetype '{decknote.model}' takes '{len(names)}' fields, but got

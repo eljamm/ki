@@ -13,7 +13,6 @@ from pathlib import Path
 import git
 import pytest
 from anki.collection import Collection
-from beartype.typing import List
 from pytest_mock import MockerFixture
 
 import ki
@@ -1047,7 +1046,7 @@ def test_push_changes_deck_for_moved_notes():
     push()
 
     # Check that deck has changed.
-    notes: List[ColNote] = get_notes(a)
+    notes: list[ColNote] = get_notes(a)
     notes = list(filter(lambda colnote: colnote.n.id == 1, notes))
     assert len(notes) == 1
     assert notes[0].deck == "aa::dd"

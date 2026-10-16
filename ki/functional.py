@@ -22,13 +22,9 @@ from beartype import beartype
 from beartype.typing import (
     Any,
     Callable,
-    FrozenSet,
     Generator,
     Iterable,
-    List,
-    Tuple,
     TypeVar,
-    Union,
 )
 from colorama import Fore, Style
 from tqdm import tqdm
@@ -159,7 +155,7 @@ def cwd() -> Dir:
 
 
 @beartype
-def is_root(path: Union[File, Dir]) -> bool:
+def is_root(path: File | Dir) -> bool:
     """Check if 'path' is a root directory (e.g., '/' on Unix or 'C:\' on Windows)."""
     # Links and `~`s are resolved before checking.
     path = path.resolve()
@@ -170,7 +166,7 @@ def is_root(path: Union[File, Dir]) -> bool:
 @beartype
 def shallow_walk(
     directory: Dir,
-) -> Tuple[Dir, List[Dir], List[File]]:
+) -> tuple[Dir, list[Dir], list[File]]:
     """Walk only the top-level directory with `os.walk()`."""
     # pylint: disable=redefined-outer-name
     root, dirs, files = next(os.walk(directory))
@@ -184,7 +180,7 @@ def shallow_walk(
 @beartype
 def walk(
     directory: Dir,
-) -> FrozenSet[Union[File, PseudoFile, Link, NoFile]]:
+) -> frozenset[File | PseudoFile | Link | NoFile]:
     """Get all file-like leaves in a directory, recursively."""
     # pylint: disable=redefined-outer-name
     leaves = frozenset()
@@ -199,7 +195,7 @@ def walk(
 def chk(
     path: Path,
     resolve: bool = True,
-) -> Union[File, Dir, EmptyDir, PseudoFile, NoPath, NoFile, Link]:
+) -> File | Dir | EmptyDir | PseudoFile | NoPath | NoFile | Link:
     """Test whether `path` is a file, a directory, or something else."""
     if resolve:
         path = path.resolve()
@@ -227,7 +223,7 @@ def touch(directory: Dir, name: str) -> File:
 
 
 @beartype
-def write(path: Union[File, NoFile], text: str) -> File:
+def write(path: File | NoFile, text: str) -> File:
     """Write text to a file."""
     with open(path, "w+", encoding="UTF-8") as f:
         f.write(text)
@@ -235,7 +231,7 @@ def write(path: Union[File, NoFile], text: str) -> File:
 
 
 @beartype
-def writeb(path: Union[File, NoFile], bs: bytes) -> File:
+def writeb(path: File | NoFile, bs: bytes) -> File:
     """Write text to a file."""
     with open(path, "wb") as f:
         f.write(bs)
@@ -281,7 +277,7 @@ def chdir(directory: Dir) -> Dir:
 
 
 @beartype
-def parent(path: Union[File, Dir]) -> Dir:
+def parent(path: File | Dir) -> Dir:
     """
     Get the parent of a path that exists.  If the path points to the filesystem
     root, we return itself.
@@ -298,14 +294,14 @@ def mkdtemp() -> EmptyDir:
 
 
 @beartype
-def copyfile(source: File, target: Union[File, NoFile]) -> File:
+def copyfile(source: File, target: File | NoFile) -> File:
     """Safely copy a file to a valid location."""
     shutil.copyfile(source, target)
     return File(target.resolve())
 
 
 @beartype
-def rglob(d: Dir, pattern: str) -> List[File]:
+def rglob(d: Dir, pattern: str) -> list[File]:
     """Call d.rglob() and returns only files."""
     files = filter(lambda p: isinstance(p, File), map(F.chk, d.rglob(pattern)))
     return list(files)
@@ -356,7 +352,7 @@ def rev_exists(repo: git.Repo, rev: str) -> bool:
 
 
 @beartype
-def get_batches(lst: List[File], n: int) -> Generator[File, None, None]:
+def get_batches(lst: list[File], n: int) -> Generator[File, None, None]:
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
@@ -391,7 +387,7 @@ def mkdir(path: NoPath) -> EmptyDir:
 
 
 @beartype
-def unlink(file: Union[File, Link]) -> NoFile:
+def unlink(file: File | Link) -> NoFile:
     """Safely unlink a file."""
     os.unlink(file)
     return NoFile(file)
@@ -421,7 +417,7 @@ def unsubmodule(repo: git.Repo) -> git.Repo:
     Un-submodule all the git submodules (converts them to ordinary subdirs and
     destroys commit history). Commit the changes to the main repository.
     """
-    _: List[git.Commit] = list(map(F.rmsm(repo), repo.submodules))
+    _: list[git.Commit] = list(map(F.rmsm(repo), repo.submodules))
     gitmodules_file: Path = F.root(repo) / GITMODULES_FILE
     if gitmodules_file.exists():
         repo.git.rm(gitmodules_file)
@@ -430,7 +426,7 @@ def unsubmodule(repo: git.Repo) -> git.Repo:
 
 
 @beartype
-def init(targetdir: Dir) -> Tuple[git.Repo, str]:
+def init(targetdir: Dir) -> tuple[git.Repo, str]:
     """Run `git init`, returning the repo and initial branch name."""
     branch = BRANCH_NAME
     try:
@@ -490,13 +486,13 @@ def progressbar(xs: Iterable[T], s: str) -> Iterable[T]:
 
 @beartype
 def starfilter(
-    f: Callable[[Any, ...], bool], xs: Iterable[Tuple[Any, ...]]
-) -> Iterable[Tuple[Any, ...]]:
+    f: Callable[[Any, ...], bool], xs: Iterable[tuple[Any, ...]]
+) -> Iterable[tuple[Any, ...]]:
     """Filter an iterable, automatically unpacking tuple arguments."""
     return filter(lambda x: f(*x), xs)
 
 
 @beartype
-def part(p: Callable[[T], bool], xs: Iterable[T]) -> Tuple[Iterable[T], Iterable[T]]:
+def part(p: Callable[[T], bool], xs: Iterable[T]) -> tuple[Iterable[T], Iterable[T]]:
     """Partition a list on a boolean predicate (Trues, Falses)."""
     return reduce(lambda s, x: s[not p(x)].append(x) or s, xs, ([], []))

@@ -636,7 +636,7 @@ def add_db_note(
                 flags,
                 data,
             )
-        ]
+        ],
     )
 
     # All the `mark_modified` flag does is update `mod`. Since we always set

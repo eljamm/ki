@@ -15,7 +15,6 @@ from anki import hooks
 from anki.collection import Collection
 from anki.exporting import AnkiExporter
 from beartype import beartype
-from beartype.typing import Dict, List
 
 
 class AnkiPackageExporter(AnkiExporter):
@@ -38,7 +37,7 @@ class AnkiPackageExporter(AnkiExporter):
 
     # pylint: disable=arguments-differ
     @beartype
-    def doExport(self, z: zipfile.ZipFile, path: str) -> Dict[str, str]:
+    def doExport(self, z: zipfile.ZipFile, path: str) -> dict[str, str]:
         """Actually do the exporting."""
         # Export into an anki2 file.
         colfile = path.replace(".apkg", ".anki2")
@@ -57,7 +56,7 @@ class AnkiPackageExporter(AnkiExporter):
 
 
 @beartype
-def export_media(z: zipfile.ZipFile, files: List[str], fdir: str) -> Dict[str, str]:
+def export_media(z: zipfile.ZipFile, files: list[str], fdir: str) -> dict[str, str]:
     """Export media files to a given zipfile object."""
     media = {}
     for i, file in enumerate(files):
