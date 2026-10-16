@@ -11,9 +11,16 @@ lib.makeExtensible (self: {
     projectRootFile = "default.nix";
 
     programs.nixfmt.enable = true;
+
+    # python
+    programs.ruff-check.enable = true;
+    programs.ruff-format.enable = true;
+
+    # ci
     programs.actionlint.enable = true;
     programs.zizmor.enable = true;
 
+    # misc
     settings.formatter.editorconfig-checker = {
       command = pkgs.editorconfig-checker;
       includes = [ "*" ];
