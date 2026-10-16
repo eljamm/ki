@@ -7,7 +7,7 @@
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  # import flake attributes from ./flake/default.nix
+  # import flake attributes from ./nix/flake/default.nix
   outputs =
     { self, ... }@inputs:
     let
