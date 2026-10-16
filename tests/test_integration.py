@@ -15,7 +15,6 @@ import pytest
 from anki.collection import Collection
 from beartype.typing import List
 from pytest_mock import MockerFixture
-from setuptools._distutils.dir_util import copy_tree
 
 import ki
 import ki.functional as F
@@ -119,7 +118,7 @@ def test_cli():
 def test_fails_without_ki_subdirectory():
     """Do pull and push know whether they're in a ki-generated git repo?"""
     tempdir = tempfile.mkdtemp()
-    copy_tree(GITREPO_PATH, tempdir)
+    shutil.copytree(GITREPO_PATH, tempdir, dirs_exist_ok=True)
     os.chdir(tempdir)
     with pytest.raises(NotKiRepoError):
         pull()
