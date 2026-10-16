@@ -9,7 +9,28 @@ description = "version control for Anki collections"
 readme = "README.md"
 license = "AGPL-3.0-only"
 requires-python = ">=3.13"
-dynamic = ["dependencies"]
+dependencies = [
+  "lark==1.1.2",
+  "anki==2.1.51",
+  "tqdm==4.63.1",
+  "click==8.1.3",
+  "colorama==0.4.4",
+  "beartype==0.11.0",
+  "gitpython==3.1.30",
+  "whatthepatch==1.0.2",
+  "git-filter-repo==2.38.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==7.1.2",
+  "pytest-mock",
+  "pytest-timeout",
+  "checksumdir==1.2.0",
+  "bitstring==3.1.9",
+  "loguru",
+  "coverage",
+]
 
 [project.urls]
 Homepage = "https://langfield.github.io/ki"
@@ -27,6 +48,3 @@ script-files = ["subdeck"]
 
 [tool.setuptools.package-data]
 ki = ["grammar.lark", "jekyll-gh-pages.yml"]
-
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
