@@ -1562,6 +1562,8 @@ def test_diff2_handles_paths_containing_colons(tmp_path: Path):
     tgt = F.chk(tmp_path / "mwe")
     repodir = F.mkdir(tgt)
     repo = git.Repo.init(repodir, initial_branch=BRANCH_NAME)
+    repo.git.config("user.name", "test")
+    repo.git.config("user.email", "test@test")
     _ = F.mkdir(F.chk(repodir / "a:b"))
     file = F.chk(tgt / "a:b" / "file")
     file.write_text("a", encoding="UTF-8")
