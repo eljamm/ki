@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
@@ -95,6 +96,7 @@ from ki import (
     write_decks,
     write_repository,
 )
+from ki.exporting import deckname_to_filename, export_deck_apkg
 from ki.functional import curried
 from ki.maybes import CONFIG_FILE
 from ki.transformer import NoteTransformer
@@ -1667,3 +1669,126 @@ def test_write_decks_warns_about_media_deck_name_collisions(
     with pytest.raises(ValueError) as err:
         write_decks(col, Dir(tmp_path), colnotes, {})
     assert "_media" in str(err)
+
+
+# EXPORTING APKG
+
+
+@beartype
+def decknames_with_notes(col: Collection) -> list[str]:
+    """Get the names of all decks which contain at least one note."""
+    return [
+        deck.name
+        for deck in col.decks.all_names_and_ids()
+        if len(col.find_notes(query=f'deck:"{deck.name}"')) > 0
+    ]
+
+
+@beartype
+def apkg_media(path: str | Path) -> dict[str, str]:
+    """Get the media mapping of an `.apkg` file."""
+    with zipfile.ZipFile(path, "r") as z:
+        assert "media" in z.namelist()
+        media: dict[str, str] = json.loads(z.read("media").decode("UTF-8"))
+        return media
+
+
+def test_deckname_to_filename_replaces_illegal_characters():
+    """Are characters illegal in filenames replaced with underscores?"""
+    assert deckname_to_filename('a/b\\c:d*e?f"g<h>i|j') == "a_b_c_d_e_f_g_h_i_j"
+    assert deckname_to_filename("hello_world") == "hello_world"
+
+
+def test_deckname_to_filename_replaces_deck_separator():
+    """Is the deck name separator replaced (so filenames stay flat)?"""
+    assert deckname_to_filename("parent::child") == "parent__child"
+
+
+def test_export_deck_apkg_writes_package(tmp_path: Path):
+    """Does exporting a deck write a valid `.apkg` file?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = open_collection(MEDIACOL.col_file)
+    deck = decknames_with_notes(col)[0]
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    count = export_deck_apkg(col, deck, out)
+
+    assert count == len(col.find_notes(query=f'deck:"{deck}"'))
+    assert count > 0
+    assert out.is_file()
+    assert zipfile.is_zipfile(out)
+    with zipfile.ZipFile(out, "r") as z:
+        assert "collection.anki2" in z.namelist()
+    col.close()
+
+
+def test_export_deck_apkg_includes_media(tmp_path: Path):
+    """Are media files included in the exported package?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = open_collection(MEDIACOL.col_file)
+    deck = decknames_with_notes(col)[0]
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    _ = export_deck_apkg(col, deck, out)
+
+    assert "1sec.mp3" in apkg_media(out).values()
+    col.close()
+
+
+def test_export_deck_apkg_without_media(tmp_path: Path):
+    """Are media files omitted when `media` is false?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = open_collection(MEDIACOL.col_file)
+    deck = decknames_with_notes(col)[0]
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    count = export_deck_apkg(col, deck, out, media=False)
+
+    assert count > 0
+    assert apkg_media(out) == {}
+    col.close()
+
+
+def test_export_deck_apkg_modern_package(tmp_path: Path):
+    """Is a v3 package written when `legacy` is false?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = open_collection(MEDIACOL.col_file)
+    deck = decknames_with_notes(col)[0]
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    count = export_deck_apkg(col, deck, out, legacy=False)
+
+    assert count > 0
+    with zipfile.ZipFile(out, "r") as z:
+        names = set(z.namelist())
+        assert "meta" in names
+        assert "collection.anki21b" in names
+    col.close()
+
+
+def test_export_deck_apkg_exports_only_requested_deck(tmp_path: Path):
+    """Are only the requested deck's notes exported?"""
+    MULTIDECK: SampleCollection = get_test_collection("multideck")
+    col = open_collection(MULTIDECK.col_file)
+    deck = "aa::bb"
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    count = export_deck_apkg(col, deck, out)
+
+    assert count == len(col.find_notes(query=f'deck:"{deck}"'))
+    assert count < len(col.find_notes(query=""))
+    col.close()
+
+
+def test_export_deck_apkg_rejects_unknown_deck(tmp_path: Path):
+    """Is an error raised (and no file written) for an unknown deck?"""
+    MULTIDECK: SampleCollection = get_test_collection("multideck")
+    col = open_collection(MULTIDECK.col_file)
+    out: File = F.chk(tmp_path / "deck.apkg", resolve=False)
+
+    with pytest.raises(ValueError) as err:
+        _ = export_deck_apkg(col, "nonexistent", out)
+
+    assert "nonexistent" in str(err)
+    assert not out.exists()
+    col.close()

@@ -6,7 +6,9 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
+import zipfile
 from importlib.metadata import version
 from pathlib import Path
 
@@ -60,6 +62,8 @@ from tests.test_ki import (
 # pylint: disable=unused-argument
 
 PARSE_NOTETYPE_DICT_CALLS_PRIOR_TO_FLATNOTE_PUSH = 2
+
+COMPILE_SCRIPT = Path(__file__).parent.parent / "compile.py"
 
 
 # CLI
@@ -1144,3 +1148,72 @@ def test_push_doesnt_remove_newlines():
     colnotes = get_notes(a)
     assert len(colnotes) == 1
     assert "<br>b<br>c" == colnotes[0].n["Back"]
+
+
+# COMPILE
+
+
+def test_compile_writes_apkg():
+    """Does the compile script write an `.apkg` file?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = opencol(MEDIACOL.col_file)
+    deck = next(d.name for d in col.decks.all_names_and_ids())
+    col.close()
+    cwd: str = os.getcwd()
+    tempdir = tempfile.mkdtemp()
+    os.chdir(tempdir)
+
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(COMPILE_SCRIPT),
+                "--collection",
+                str(MEDIACOL.col_file),
+                "--deck",
+                deck,
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        assert completed.returncode == 0, completed.stderr
+        assert completed.stderr == ""
+        apkg = Path(tempdir) / f"{deck}.apkg"
+        assert apkg.is_file()
+        assert zipfile.is_zipfile(apkg)
+        with zipfile.ZipFile(apkg, "r") as z:
+            assert "collection.anki2" in z.namelist()
+    finally:
+        os.chdir(cwd)
+
+
+def test_compile_sanitizes_deckname():
+    """Does the compile script replace illegal characters in deck names?"""
+    MULTIDECK: SampleCollection = get_test_collection("multideck")
+    cwd: str = os.getcwd()
+    tempdir = tempfile.mkdtemp()
+    os.chdir(tempdir)
+
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(COMPILE_SCRIPT),
+                "--collection",
+                str(MULTIDECK.col_file),
+                "--deck",
+                "aa::bb",
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        assert completed.returncode == 0, completed.stderr
+        assert completed.stderr == ""
+        assert (Path(tempdir) / "aa__bb.apkg").is_file()
+        assert not (Path(tempdir) / "aa::bb.apkg").exists()
+    finally:
+        os.chdir(cwd)
