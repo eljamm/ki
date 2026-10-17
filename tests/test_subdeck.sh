@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-pip install -e .
+uv sync --extra dev --frozen
 
 # Create root repository.
 rm -rf /tmp/subtree
