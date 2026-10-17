@@ -33,14 +33,17 @@ from functools import reduce
 from itertools import chain, starmap, tee
 from pathlib import Path
 
-# Required to avoid circular imports because the Anki pylib codebase is gross.
-import anki.collection
+# NOTE: `anki.collection` must be imported first because the Anki pylib
+# has an import cycle that only resolves when it's the entrypoint,
+# else we get a circular import.
+import anki.collection  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import click
 import git
 from anki.cards import Card
-from anki.collection import Collection, Note, OpChangesWithId
+from anki.collection import Collection, OpChangesWithId
 from anki.errors import NotFoundError
 from anki.models import NotetypeDict
+from anki.notes import Note
 from anki.utils import ids2str
 from beartype import beartype
 from beartype.typing import (
