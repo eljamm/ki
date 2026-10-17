@@ -848,7 +848,7 @@ def hasmedia(model: NotetypeDict, fname: str) -> bool:
     if fname in model["css"]:
         return True
     # If no reference to fname then check the templates as well.
-    return any((fname in t["qfmt"] or fname in t["afmt"] for t in model["tmpls"]))
+    return any(fname in t["qfmt"] or fname in t["afmt"] for t in model["tmpls"])
 
 
 @beartype
