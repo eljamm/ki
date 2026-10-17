@@ -486,7 +486,7 @@ def update_note(
     # `decknote.fields`, or else we would have printed a warning and returned
     # above.
     missing = {key for key in decknote.fields if key not in note}
-    warnings = map(lambda k: NoteFieldValidationWarning(nid, k, new_notetype), missing)
+    warnings = (NoteFieldValidationWarning(nid, k, new_notetype) for k in missing)
     fields = [(key, field) for key, field in decknote.fields.items() if key in note]
     stardo(update_field(decknote, note), fields)
     note.flush()
@@ -731,8 +731,8 @@ def get_header_lines(colnote) -> list[str]:
 @beartype
 def localmedia(s: str, regex: str) -> Iterable[str]:
     """Return local media filenames matching the given regex pattern."""
-    fnames = map(lambda m: m.group("fname"), re.finditer(regex, s))
-    fnames = map(lambda s: s.strip(), fnames)
+    fnames = (m.group("fname") for m in re.finditer(regex, s))
+    fnames = (s.strip() for s in fnames)
     return filter(lambda x: not re.match(URLS, x.lower()), fnames)
 
 
@@ -758,8 +758,8 @@ def copy_note_media(col: Collection, src: Dir, tgt: Dir, row: NoteDBRow) -> set[
     """
     files: Iterable[str] = media_filenames_in_field(col, row.flds)
     rootfiles = filter(lambda f: f == os.path.basename(f), files)
-    medias: Iterable[File] = filter(F.isfile, map(lambda f: F.chk(src / f), rootfiles))
-    srcdsts = map(lambda file: (file, F.chk(tgt / file.name)), medias)
+    medias: Iterable[File] = filter(F.isfile, (F.chk(src / f) for f in rootfiles))
+    srcdsts = ((file, F.chk(tgt / file.name)) for file in medias)
     return set(starmap(F.copyfile, srcdsts))
 
 
@@ -770,8 +770,8 @@ def copy_notetype_media(
 ) -> frozenset[File]:
     """Copy media from notetype `m` from source to target, returning set of copies."""
     matches: Iterable[Path] = filter(lambda p: hasmedia(m, str(p)), paths)
-    medias = filter(F.isfile, map(lambda p: F.chk(src / p), matches))
-    srcdsts = map(lambda f: (f, F.chk(tgt / f.name)), medias)
+    medias = filter(F.isfile, (F.chk(src / p) for p in matches))
+    srcdsts = ((f, F.chk(tgt / f.name)) for f in medias)
     return frozenset(starmap(F.copyfile, srcdsts))
 
 
@@ -825,7 +825,7 @@ def copy_media_files(
 
     # Copy notetype template media files.
     _, _, files = F.shallow_walk(media_dir)
-    paths: Iterable[Path] = map(lambda f: Path(f.name), files)
+    paths: Iterable[Path] = (Path(f.name) for f in files)
     paths = set(filter(lambda f: str(f).startswith("_"), paths))
     models = filter(lambda m: int(m["id"]) in mids, col.models.all())
 
@@ -848,7 +848,7 @@ def hasmedia(model: NotetypeDict, fname: str) -> bool:
     if fname in model["css"]:
         return True
     # If no reference to fname then check the templates as well.
-    return any(map(lambda t: fname in t["qfmt"] or fname in t["afmt"], model["tmpls"]))
+    return any((fname in t["qfmt"] or fname in t["afmt"] for t in model["tmpls"]))
 
 
 @beartype
