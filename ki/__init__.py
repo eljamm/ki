@@ -46,16 +46,9 @@ from beartype import beartype
 from beartype.typing import (
     Any,
     Callable,
-    Dict,
-    FrozenSet,
     Iterable,
     Iterator,
-    List,
-    Optional,
-    Set,
-    Tuple,
     TypeVar,
-    Union,
 )
 from lark import Lark
 
@@ -126,7 +119,7 @@ TQ = F.progressbar
 
 T = TypeVar("T")
 NoteId, DeckId, CardId = int, int, int
-CardFileMap = Dict[DeckId, List[CardFile]]
+CardFileMap = dict[DeckId, list[CardFile]]
 
 GITATTRS_FILE = ".gitattributes"
 
@@ -292,7 +285,7 @@ def is_ignorable(root: Dir, path: Path) -> bool:
 @beartype
 def mungediff(
     parse: Callable[[Delta], DeckNote], a_root: Dir, b_root: Dir, d: git.Diff
-) -> Iterable[Union[Delta, Warning]]:
+) -> Iterable[Delta | Warning]:
     """Extract deltas and warnings from a collection of diffs."""
     a, b = d.a_path, d.b_path
     a, b = a if a else b, b if b else a
@@ -323,7 +316,7 @@ def mungediff(
 def diff2(
     repo: git.Repo,
     parse: Callable[[Delta], DeckNote],
-) -> Iterable[Union[Delta, Warning]]:
+) -> Iterable[Delta | Warning]:
     """Diff `repo` from `HEAD~1` to `HEAD`."""
     # We diff from A~B.
     head1: Rev = M.rev(repo, repo.commit("HEAD~1").hexsha)
@@ -337,7 +330,7 @@ def diff2(
 
 
 @beartype
-def get_models_recursively(kirepo: KiRepo) -> Dict[str, Notetype]:
+def get_models_recursively(kirepo: KiRepo) -> dict[str, Notetype]:
     """
     Find and merge all `models.json` files recursively. Returns a dictionary
     sending model names to Notetypes.
@@ -354,7 +347,7 @@ def get_models_recursively(kirepo: KiRepo) -> Dict[str, Notetype]:
 
 
 @beartype
-def check_fields_health(note: Note) -> List[Warning]:
+def check_fields_health(note: Note) -> list[Warning]:
     """Construct warnings when Anki's fields health check fails."""
     health = note.fields_check()
     if health == 1:
@@ -367,7 +360,7 @@ def check_fields_health(note: Note) -> List[Warning]:
 
 
 @beartype
-def get_guid(fields: List[str]) -> str:
+def get_guid(fields: list[str]) -> str:
     """Construct a new GUID for a note. Adapted from genanki's `guid_for()`."""
     # Get the first 8 bytes of the SHA256 of `contents` as an int.
     m = hashlib.sha256()
@@ -388,7 +381,7 @@ def parse_note(parser: Lark, transformer: NoteTransformer, delta: Delta) -> Deck
     """Parse with lark."""
     tree = parser.parse(delta.path.read_text(encoding=UTF8))
     flatnote: FlatNote = transformer.transform(tree)
-    parts: Tuple[str, ...] = delta.relpath.parent.parts
+    parts: tuple[str, ...] = delta.relpath.parent.parts
     deck: str = "::".join(parts)
 
     # Generate a GUID from the hash of the field contents if the `guid` field
@@ -481,7 +474,7 @@ def update_note(
         note.load()
 
     # Validate field keys against notetype.
-    warnings: List[Warning] = validate_decknote_fields(new_notetype, decknote)
+    warnings: list[Warning] = validate_decknote_fields(new_notetype, decknote)
     if len(warnings) > 0:
         return warnings
 
@@ -496,17 +489,17 @@ def update_note(
     note.flush()
 
     # Remove if unhealthy.
-    fwarns: List[Warning] = check_fields_health(note)
+    fwarns: list[Warning] = check_fields_health(note)
     if len(fwarns) > 0:
         note.col.remove_notes([nid])
     return chain(warnings, fwarns)
 
 
 @beartype
-def validate_decknote_fields(notetype: Notetype, decknote: DeckNote) -> List[Warning]:
+def validate_decknote_fields(notetype: Notetype, decknote: DeckNote) -> list[Warning]:
     """Validate that the fields given in the note match the notetype."""
-    warnings: List[Warning] = []
-    names: List[str] = [field.name for field in notetype.flds]
+    warnings: list[Warning] = []
+    names: list[str] = [field.name for field in notetype.flds]
 
     # TODO: It might also be nice to print the path of the note in the
     # repository. This would have to be added to the `DeckNote` spec.
@@ -612,8 +605,8 @@ def add_db_note(
     mid: int,
     mod: int,
     usn: int,
-    tags: List[str],
-    fields: List[str],
+    tags: list[str],
+    fields: list[str],
     sfld: str,
     csum: int,
     flags: int,
@@ -661,7 +654,7 @@ def add_db_note(
 def push_note(
     col: Collection,
     timestamp_ns: int,
-    guids: Dict[str, NoteMetadata],
+    guids: dict[str, NoteMetadata],
     new_nids: Iterator[int],
     decknote: DeckNote,
 ) -> Iterable[Warning]:
@@ -676,7 +669,7 @@ def push_note(
     """
     # Notetype/model names are privileged in Anki, so if we don't find the
     # right name, we raise an error.
-    model_id: Optional[int] = col.models.id_for_name(decknote.model)
+    model_id: int | None = col.models.id_for_name(decknote.model)
     if model_id is None:
         raise MissingNotetypeError(decknote.model)
     new_notetype: Notetype = M.notetype(col.models.get(model_id))
@@ -714,7 +707,7 @@ def push_note(
 
 
 @beartype
-def get_header_lines(colnote) -> List[str]:
+def get_header_lines(colnote) -> list[str]:
     """Get header of markdown representation of note."""
     lines = [
         "# Note",
@@ -749,7 +742,7 @@ def media_filenames_in_field(col: Collection, s: str) -> Iterable[str]:
 
 @curried
 @beartype
-def copy_note_media(col: Collection, src: Dir, tgt: Dir, row: NoteDBRow) -> Set[File]:
+def copy_note_media(col: Collection, src: Dir, tgt: Dir, row: NoteDBRow) -> set[File]:
     """
     Copy a single note's media files and return the copies as a set. We do this
     by first filtering for only 'rootfiles', i.e. excluding media files in
@@ -770,8 +763,8 @@ def copy_note_media(col: Collection, src: Dir, tgt: Dir, row: NoteDBRow) -> Set[
 @curried
 @beartype
 def copy_notetype_media(
-    src: Dir, tgt: Dir, paths: Set[Path], m: NotetypeDict
-) -> FrozenSet[File]:
+    src: Dir, tgt: Dir, paths: set[Path], m: NotetypeDict
+) -> frozenset[File]:
     """Copy media from notetype `m` from source to target, returning set of copies."""
     matches: Iterable[Path] = filter(lambda p: hasmedia(m, str(p)), paths)
     medias = filter(F.isfile, map(lambda p: F.chk(src / p), matches))
@@ -783,7 +776,7 @@ def copy_notetype_media(
 def copy_media_files(
     col: Collection,
     media_target_dir: EmptyDir,
-) -> Dict[int, Set[File]]:
+) -> dict[int, set[File]]:
     """
     Get a list of extant media files used in notes and notetypes, copy those
     media files to the top-level `_media/` directory in the repository root,
@@ -821,7 +814,7 @@ def copy_media_files(
 
     # Find media files that appear in note fields and copy them to the target.
     query: str = "select * from notes where id in " + strnids
-    rows: List[NoteDBRow] = [NoteDBRow(*row) for row in col.db.all(query)]
+    rows: list[NoteDBRow] = [NoteDBRow(*row) for row in col.db.all(query)]
     rows = TQ(rows, "Media")
     copy_fn = copy_note_media(col, media_dir, media_target_dir)
     media = {row.nid: copy_fn(row) for row in rows}
@@ -871,8 +864,8 @@ def write_repository(
 
     # ColNote-containing data structure, to be passed to `write_decks()`.
     nids: Iterable[int] = TQ(col.find_notes(query=""), "Notes")
-    colnotes: Dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
-    media: Dict[int, Set[File]] = copy_media_files(col, media_target_dir)
+    colnotes: dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
+    media: dict[int, set[File]] = copy_media_files(col, media_target_dir)
 
     write_decks(
         col=col,
@@ -884,22 +877,22 @@ def write_repository(
 
 
 @beartype
-def postorder(node: Union[Root, Deck]) -> List[Deck]:
+def postorder(node: Root | Deck) -> list[Deck]:
     """
     Post-order traversal. Guarantees that we won't process a node until we've
     processed all its children.
     """
-    descendants: List[Deck] = reduce(lambda xs, x: xs + postorder(x), node.children, [])
+    descendants: list[Deck] = reduce(lambda xs, x: xs + postorder(x), node.children, [])
     return descendants if isinstance(node, Root) else descendants + [node]
 
 
 @beartype
-def preorder(node: Union[Root, Deck]) -> List[Deck]:
+def preorder(node: Root | Deck) -> list[Deck]:
     """
     Pre-order traversal. Guarantees that we won't process a node until
     we've processed all its ancestors.
     """
-    descendants: List[Deck] = reduce(lambda xs, x: xs + preorder(x), node.children, [])
+    descendants: list[Deck] = reduce(lambda xs, x: xs + preorder(x), node.children, [])
     return descendants if isinstance(node, Root) else [node] + descendants
 
 
@@ -907,8 +900,8 @@ def preorder(node: Union[Root, Deck]) -> List[Deck]:
 def write_decks(
     col: Collection,
     targetdir: Dir,
-    colnotes: Dict[int, ColNote],
-    media: Dict[int, Set[File]],
+    colnotes: dict[int, ColNote],
+    media: dict[int, set[File]],
 ) -> None:
     """
     The proper way to do this is a DFS traversal, perhaps recursively, which
@@ -967,7 +960,7 @@ def write_decks(
 @curried
 @beartype
 def write_note(
-    deckmap: Dict[str, Deck],
+    deckmap: dict[str, Deck],
     colnote: ColNote,
 ) -> File:
     decknames = set(map(lambda c: c.col.decks.name(c.did), colnote.n.cards()))
@@ -988,13 +981,13 @@ def write_note(
 
 @curried
 @beartype
-def write_models(col: Collection, models: Dict[int, NotetypeDict], deck: Deck) -> None:
+def write_models(col: Collection, models: dict[int, NotetypeDict], deck: Deck) -> None:
     """Write the `models.json` file for the given deck."""
     did: int = deck.did
     deckd: Dir = deck.deckd
-    descendants: List[CardId] = col.decks.cids(did=did, children=True)
-    cards: List[Card] = list(map(col.get_card, descendants))
-    descendant_mids: Set[int] = {c.note().mid for c in cards}
+    descendants: list[CardId] = col.decks.cids(did=did, children=True)
+    cards: list[Card] = list(map(col.get_card, descendants))
+    descendant_mids: set[int] = {c.note().mid for c in cards}
 
     # Write `models.json` for current deck.
     deck_models = {mid: models[mid] for mid in descendant_mids}
@@ -1010,7 +1003,7 @@ def mklink(targetd: Dir, colnote: ColNote, deckd: Dir, card: Card, file: File) -
 
 
 @beartype
-def parentmap(root: Union[Root, Deck]) -> Dict[str, Union[Root, Deck]]:
+def parentmap(root: Root | Deck) -> dict[str, Root | Deck]:
     """Map deck fullnames to parent `Deck`s."""
     parents = {child.fullname: root for child in root.children}
     return parents | reduce(lambda x, y: x | y, map(parentmap, root.children), {})
@@ -1019,14 +1012,14 @@ def parentmap(root: Union[Root, Deck]) -> Dict[str, Union[Root, Deck]]:
 @curried
 @beartype
 def planned_link(
-    parents: Dict[str, Union[Root, Deck]], deck: Deck, media_file: File
-) -> Optional[PlannedLink]:
+    parents: dict[str, Root | Deck], deck: Deck, media_file: File
+) -> PlannedLink | None:
     """Get the target of the to-be-created media symlink."""
     link: Path = F.chk(deck.mediad / media_file.name, resolve=False)
     if not isinstance(link, NoFile):
         return None
 
-    parent: Union[Root, Deck] = parents[deck.fullname]
+    parent: Root | Deck = parents[deck.fullname]
     if isinstance(parent, Root):
         tgt = media_file
     else:
@@ -1039,15 +1032,15 @@ def planned_link(
 def symlink_deck_media(
     col: Collection,
     targetd: Dir,
-    media: Dict[int, Set[File]],
-    parents: Dict[str, Union[Root, Deck]],
+    media: dict[int, set[File]],
+    parents: dict[str, Root | Deck],
     deck: Deck,
 ) -> None:
     """Create chained symlinks for a single deck."""
     # Get nids for all descendant notes with media.
-    descendants: List[CardId] = col.decks.cids(did=deck.did, children=True)
+    descendants: list[CardId] = col.decks.cids(did=deck.did, children=True)
     cards: Iterable[Card] = map(col.get_card, descendants)
-    nids: Set[NoteId] = {NOTETYPE_NID} | set(map(lambda c: c.nid, cards))
+    nids: set[NoteId] = {NOTETYPE_NID} | set(map(lambda c: c.nid, cards))
 
     # Get link path and target for each media file, and create the links.
     files = F.cat(map(lambda nid: media[nid], filter(lambda nid: nid in media, nids)))
@@ -1060,11 +1053,11 @@ def symlink_media(
     col: Collection,
     root: Root,
     targetd: Dir,
-    media: Dict[int, Set[File]],
+    media: dict[int, set[File]],
 ) -> None:
     """Chain symlinks up the deck tree into top-level `<collection>/_media/`."""
-    decks: List[Deck] = preorder(root)
-    parents: Dict[str, Union[Root, Deck]] = parentmap(root)
+    decks: list[Deck] = preorder(root)
+    parents: dict[str, Root | Deck] = parentmap(root)
     return do(symlink_deck_media(col, targetd, media, parents), decks)
 
 
@@ -1104,7 +1097,7 @@ def html_to_screen(html: str) -> str:
 
 @curried
 @beartype
-def get_field_payload(col: Collection, name: str, content: str) -> List[str]:
+def get_field_payload(col: Collection, name: str, content: str) -> list[str]:
     """Get the lines of a markdown snippet for some Anki note field."""
     text = col.media.escape_media_filenames(html_to_screen(content), unescape=True)
     return [f"## {name}", text, ""]
@@ -1146,7 +1139,7 @@ def warn(w: Warning) -> None:
 
 
 @beartype
-def get_target(cwd: Dir, col_file: File, directory: str) -> Tuple[EmptyDir, bool]:
+def get_target(cwd: Dir, col_file: File, directory: str) -> tuple[EmptyDir, bool]:
     """Create default target directory."""
     path = F.chk(Path(directory) if directory != "" else cwd / col_file.stem)
     new: bool = True
@@ -1191,7 +1184,7 @@ def echo_note_change_types(deltas: Iterable[Delta]) -> None:
 def add_model(col: Collection, model: Notetype) -> None:
     """Add a model to the database."""
     # Check if a model already exists with this name, and get its `mid`.
-    mid: Optional[int] = col.models.id_for_name(model.name)
+    mid: int | None = col.models.id_for_name(model.name)
 
     # TODO: This function is unfinished. We need to add new notetypes (and
     # rename them) only if they are 'new', where new means they are different
@@ -1238,13 +1231,13 @@ def mediadata(col: Collection, fname: str) -> bytes:
 
 
 @beartype
-def get_note_metadata(col: Collection) -> Dict[str, NoteMetadata]:
+def get_note_metadata(col: Collection) -> dict[str, NoteMetadata]:
     """
     Construct a map from guid -> (nid, mod, mid), adapted from
     `Anki2Importer._import_notes()`. Note that `mod` is the modification
     timestamp, in epoch seconds (timestamp of when the note was last modified).
     """
-    guids: Dict[str, NoteMetadata] = {}
+    guids: dict[str, NoteMetadata] = {}
     for nid, guid, mod, mid in col.db.execute("select id, guid, mod, mid from notes"):
         guids[guid] = NoteMetadata(nid, mod, mid)
     return guids
@@ -1274,7 +1267,7 @@ def commit_hashes_file(kirepo: KiRepo) -> None:
 
 
 @beartype
-def cleanup(targetdir: Dir, new: bool) -> Union[Dir, EmptyDir, NoPath]:
+def cleanup(targetdir: Dir, new: bool) -> Dir | EmptyDir | NoPath:
     """Cleans up after failed clone operations."""
     try:
         if new:
@@ -1333,7 +1326,7 @@ def _clone2(
     targetdir: EmptyDir,
     msg: str,
     silent: bool,
-) -> Tuple[git.Repo, str]:
+) -> tuple[git.Repo, str]:
     """
     Clone an Anki collection into a directory.
 
@@ -1395,7 +1388,7 @@ def _pull1() -> None:
     kirepo: KiRepo = M.kirepo(F.cwd())
     col = M.collection(kirepo.col_file)
     md5sum: str = F.md5(kirepo.col_file)
-    hashes: List[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
+    hashes: list[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
     hashes = list(filter(lambda l: l != "", hashes))
     if md5sum in hashes[-1]:
         echo("ki pull: up to date.")
@@ -1519,7 +1512,7 @@ def _push() -> PushResult:
     kirepo: KiRepo = M.kirepo(F.cwd())
     col = M.collection(kirepo.col_file)
     md5sum: str = F.md5(kirepo.col_file)
-    hashes: List[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
+    hashes: list[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
     hashes = list(filter(lambda l: l != "", hashes))
     if md5sum not in hashes[-1]:
         raise UpdatesRejectedError(kirepo.col_file)
@@ -1544,14 +1537,14 @@ def _push() -> PushResult:
         return PushResult.UP_TO_DATE
 
     echo(f"Pushing to '{kirepo.col_file}'")
-    models: Dict[str, Notetype] = get_models_recursively(head_kirepo)
+    models: dict[str, Notetype] = get_models_recursively(head_kirepo)
     return write_collection(deltas, models, kirepo, parse, head_kirepo, col)
 
 
 @beartype
 def write_collection(
     deltas: Iterable[Delta],
-    models: Dict[str, Notetype],
+    models: dict[str, Notetype],
     kirepo: KiRepo,
     parse: Callable[[Delta], DeckNote],
     head_kirepo: KiRepo,
@@ -1582,7 +1575,7 @@ def write_collection(
     deltas: Iterable[Delta] = filter(lambda d: d.status != DELETED, zs)
 
     # Map guid -> (nid, mod, mid).
-    guids: Dict[str, NoteMetadata] = get_note_metadata(tempcol)
+    guids: dict[str, NoteMetadata] = get_note_metadata(tempcol)
 
     # Parse to-be-deleted notes and remove them from collection.
     del_guids: Iterable[str] = map(lambda dd: dd.guid, map(parse, dels))

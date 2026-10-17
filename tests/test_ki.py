@@ -27,14 +27,8 @@ from beartype import beartype
 from beartype.typing import (
     Any,
     Callable,
-    Dict,
     Iterable,
     Iterator,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Union,
 )
 from click.testing import CliRunner
 from lark import Lark
@@ -306,7 +300,7 @@ def invoke(*args, **kwargs):
 
 
 @beartype
-def capture(f: Callable[[Any, ...], Any], *args, **kwargs) -> Tuple[Any, str]:
+def capture(f: Callable[[Any, ...], Any], *args, **kwargs) -> tuple[Any, str]:
     a, b = io.StringIO(), io.StringIO()
     with contextlib.redirect_stdout(a) as out, contextlib.redirect_stderr(b) as err:
         ret = f(*args, **kwargs)
@@ -317,7 +311,7 @@ def capture(f: Callable[[Any, ...], Any], *args, **kwargs) -> Tuple[Any, str]:
 def clone(
     collection: File,
     directory: str = "",
-) -> Tuple[git.Repo, str]:
+) -> tuple[git.Repo, str]:
     """Make a test `ki clone` call."""
     d = F.mkdtemp()
     os.chdir(d)
@@ -383,13 +377,13 @@ def checksum_git_repository(path: str) -> str:
 
 
 @beartype
-def get_notes(collection: File) -> List[ColNote]:
+def get_notes(collection: File) -> list[ColNote]:
     """Get a list of notes from a path."""
     cwd: Dir = F.cwd()
     col = Collection(collection)
     F.chdir(cwd)
 
-    notes: List[ColNote] = []
+    notes: list[ColNote] = []
     for nid in set(col.find_notes("")):
         colnote: ColNote = M.colnote(col, nid)
         notes.append(colnote)
@@ -416,21 +410,21 @@ Deck = str
 Nid = int
 Field = str
 Model = str
-NoteSpec = Tuple[Model, List[Deck], Nid, List[Field]]
+NoteSpec = tuple[Model, list[Deck], Nid, list[Field]]
 
 
 @beartype
-def read(path: Union[str, Path]) -> str:
+def read(path: str | Path) -> str:
     return Path(path).read_text(encoding="UTF-8")
 
 
 @beartype
-def write(path: Union[str, Path], s: str) -> None:
+def write(path: str | Path, s: str) -> None:
     Path(path).write_text(s, encoding="UTF-8")
 
 
 @beartype
-def append(path: Union[str, Path], s: str) -> None:
+def append(path: str | Path, s: str) -> None:
     with Path(path).open("a", encoding="UTF-8") as f:
         f.write(s)
 
@@ -474,7 +468,7 @@ def opencol(f: File) -> Collection:
 
 
 @beartype
-def mkcol(ns: List[NoteSpec]) -> File:
+def mkcol(ns: list[NoteSpec]) -> File:
     file = F.touch(F.mkdtemp(), "a.anki2")
     col = opencol(file)
     do(addnote(col), ns)
@@ -517,9 +511,9 @@ def edit(f: File, spec: NoteSpec) -> File:
 @beartype
 def editcol(
     f: File,
-    adds: Optional[List[NoteSpec]] = None,
-    edits: Optional[List[NoteSpec]] = None,
-    deletes: Optional[List[int]] = None,
+    adds: list[NoteSpec] | None = None,
+    edits: list[NoteSpec] | None = None,
+    deletes: list[int] | None = None,
 ) -> File:
     """Edit an existing collection file."""
     col = opencol(f)
@@ -531,7 +525,7 @@ def editcol(
     return f
 
 
-def mkbasic(guid: str, fields: Tuple[str, str]) -> str:
+def mkbasic(guid: str, fields: tuple[str, str]) -> str:
     front, back = fields
     return f"""# Note
 ```
@@ -552,7 +546,7 @@ notetype: Basic
 
 
 @beartype
-def write_basic(deck: str, fields: Tuple[str, str]) -> File:
+def write_basic(deck: str, fields: tuple[str, str]) -> File:
     """Write a markdown note to a deck from the root of a ki repository."""
     front = fields[0]
     path = Path("./" + "/".join(deck.split("::") + [f"{front}.md"]))
@@ -574,7 +568,7 @@ def runcmd(c: str) -> str:
 
 
 @beartype
-def runcmds(cs: List[str]) -> Tuple[str, str]:
+def runcmds(cs: list[str]) -> tuple[str, str]:
     return "\n".join(cs), "".join(map(runcmd, cs))
 
 
@@ -871,7 +865,7 @@ def test_slugify_handles_html_tags(tmpfs: None):
 
 
 @beartype
-def get_colnote_with_sfld(sfld: str) -> Tuple[Collection, ColNote]:
+def get_colnote_with_sfld(sfld: str) -> tuple[Collection, ColNote]:
     ORIGINAL: SampleCollection = get_test_collection("original")
     col = open_collection(ORIGINAL.col_file)
     note = col.get_note(set(col.find_notes("")).pop())
@@ -890,7 +884,7 @@ def get_colnote_with_sfld(sfld: str) -> Tuple[Collection, ColNote]:
 
 
 @beartype
-def get_basic_colnote_with_fields(front: str, back: str) -> Tuple[Collection, ColNote]:
+def get_basic_colnote_with_fields(front: str, back: str) -> tuple[Collection, ColNote]:
     ORIGINAL: SampleCollection = get_test_collection("original")
     col = open_collection(ORIGINAL.col_file)
     note = col.get_note(set(col.find_notes("")).pop())
@@ -931,7 +925,7 @@ def test_get_note_path_produces_nonempty_filenames(tmpfs: None):
 
 
 @beartype
-def get_diff2_args() -> Tuple[git.Repo, Callable[[Delta], DeckNote]]:
+def get_diff2_args() -> tuple[git.Repo, Callable[[Delta], DeckNote]]:
     """
     A test 'fixture' (not really a pytest fixture, but a setup function) to be
     called when we need to test `diff2()`.
@@ -943,14 +937,14 @@ def get_diff2_args() -> Tuple[git.Repo, Callable[[Delta], DeckNote]]:
     Returns the values needed to pass as arguments to `diff2()`.
 
     This makes ephemeral repositories, so we should make any changes we expect
-    to see the results of in `deltas: List[Delta]` *before* calling this
+    to see the results of in `deltas: list[Delta]` *before* calling this
     function. For example, if we wanted to add a note, and then expected to see
     a `GitChangeType.ADDED`, then we should do that in `ORIGINAL.repodir`
     before calling this function.
     """
     kirepo: KiRepo = M.kirepo(F.cwd())
     md5sum: str = F.md5(kirepo.col_file)
-    hashes: List[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
+    hashes: list[str] = kirepo.hashes_file.read_text(encoding=UTF8).split("\n")
     hashes = list(filter(lambda l: l != "", hashes))
     if md5sum not in hashes[-1]:
         raise UpdatesRejectedError(kirepo.col_file)
@@ -969,7 +963,7 @@ def get_diff2_args() -> Tuple[git.Repo, Callable[[Delta], DeckNote]]:
 def test_diff2_shows_no_changes_when_no_changes_have_been_made(tmpfs: None):
     ORIGINAL = get_test_collection("original")
     clone(ORIGINAL.col_file)
-    deltas: List[Delta] = diff2(*get_diff2_args())
+    deltas: list[Delta] = diff2(*get_diff2_args())
     changed = [str(delta.path) for delta in deltas]
     assert changed == []
 
@@ -987,7 +981,7 @@ def test_diff2_yields_a_warning_when_a_file_cannot_be_found(tmpfs: None):
 
     os.remove(Path(remote_repo.working_dir) / NOTE_2)
 
-    deltas: List[Union[Delta, Warning]] = diff2(*args)
+    deltas: list[Delta | Warning] = diff2(*args)
     del args
     gc.collect()
     warnings = [d for d in deltas if isinstance(d, DiffTargetFileNotFoundWarning)]
@@ -1447,7 +1441,7 @@ def test_copy_media_files_finds_notetype_media(tmpfs: None):
     col: Collection = open_collection(MEDIACOL.col_file)
 
     media = copy_media_files(col, F.mkdtemp())
-    media_files: Set[File] = set()
+    media_files: set[File] = set()
     for media_set in media.values():
         media_files = media_files | media_set
     assert len(media_files) == 2
@@ -1602,7 +1596,7 @@ def test_write_decks_skips_root_deck(tmp_path: Path):
     ORIGINAL: SampleCollection = get_test_collection("original")
     col = open_collection(ORIGINAL.col_file)
     nids: Iterable[int] = col.find_notes(query="")
-    colnotes: Dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
+    colnotes: dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
     write_decks(col, Dir(tmp_path), colnotes, {})
     assert not os.path.isdir(tmp_path / "[no deck]")
 
@@ -1664,7 +1658,7 @@ def test_write_decks_warns_about_media_deck_name_collisions(
     )
     col = open_collection(DECK.col_file)
     nids: Iterable[int] = col.find_notes(query="")
-    colnotes: Dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
+    colnotes: dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
     mock = mocker.patch("ki.warn")
     with pytest.raises(ValueError) as err:
         write_decks(col, Dir(tmp_path), colnotes, {})
