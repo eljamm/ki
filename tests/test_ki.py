@@ -17,12 +17,16 @@ from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
 
-import anki.collection
+# NOTE: `anki.collection` must be imported first because the Anki pylib
+# has an import cycle that only resolves when it's the entrypoint,
+# else we get a circular import.
+import anki.collection  # pyright: ignore[reportUnusedImport]
 import bitstring
 import checksumdir
 import git
 import pytest
-from anki.collection import Collection, Note
+from anki.collection import Collection
+from anki.notes import Note
 from beartype import beartype
 from beartype.typing import (
     Any,
