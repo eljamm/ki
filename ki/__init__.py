@@ -459,7 +459,7 @@ def update_note(
 
     nid = note.id
     note.tags = decknote.tags
-    note.flush()
+    note.col.update_note(note, skip_undo_entry=True)
 
     # Set the deck of the given note, as well as all its cards, and create a
     # deck with this name if it doesn't already exist. See the
@@ -481,7 +481,7 @@ def update_note(
     if len(warnings) > 0:
         return warnings
 
-    # Set field values and flush to collection database. This is correct
+    # Set field values and write to the collection database. This is correct
     # because every field name that appears in `new_notetype` is contained in
     # `decknote.fields`, or else we would have printed a warning and returned
     # above.
@@ -489,7 +489,7 @@ def update_note(
     warnings = (NoteFieldValidationWarning(nid, k, new_notetype) for k in missing)
     fields = [(key, field) for key, field in decknote.fields.items() if key in note]
     stardo(update_field(decknote, note), fields)
-    note.flush()
+    note.col.update_note(note, skip_undo_entry=True)
 
     # Remove if unhealthy.
     fwarns: list[Warning] = check_fields_health(note)
