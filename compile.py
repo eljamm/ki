@@ -3,15 +3,12 @@
 """Compile a deck."""
 
 import argparse
-import os
-import re
 
-from anki.collection import (
-    Collection,
-    DeckIdLimit,
-    ExportAnkiPackageOptions,
-)
+from anki.collection import Collection
 from beartype import beartype
+
+from ki.exporting import deckname_to_filename, export_deck_apkg
+from ki.types import NoFile
 
 
 @beartype
@@ -23,25 +20,10 @@ def main() -> None:
     args: argparse.Namespace = parser.parse_args()
 
     col = Collection(args.collection)
-    did = col.decks.id(args.deck)
+    deckname = deckname_to_filename(args.deck)
+    out_path = NoFile(f"{deckname}.apkg")
 
-    if did is None:
-        raise ValueError(f"deck not found: {args.deck}")
-
-    deckname = re.sub(r'[\\/?<>:*|"^]', "_", args.deck)
-    filename = f"{deckname}.apkg"
-    file = os.path.normpath(filename)
-
-    _ = col.export_anki_package(
-        out_path=file,
-        options=ExportAnkiPackageOptions(
-            with_scheduling=False,
-            with_deck_configs=False,
-            with_media=True,
-            legacy=True,
-        ),
-        limit=DeckIdLimit(deck_id=did),
-    )
+    export_deck_apkg(col, args.deck, out_path)
 
 
 if __name__ == "__main__":
