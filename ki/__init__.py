@@ -202,7 +202,7 @@ def unlock(con: sqlite3.Connection) -> None:
 def cp_repo(rev: Rev, suffix: str) -> git.Repo:
     """Get a temporary copy of a git repository in /tmp/<suffix>/."""
     # Copy the entire repo into a temp directory ending in `../suffix/`.
-    target: NoFile = F.chk(F.mkdtemp() / suffix)
+    target: NoFile = M.nofile(F.mkdtemp() / suffix)
     ephem = git.Repo(F.copytree(F.root(rev.repo), target))
 
     # Do a reset --hard to the given SHA.

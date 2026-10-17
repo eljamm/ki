@@ -516,7 +516,7 @@ def submodules(r: git.Repo) -> dict[Path, Submodule]:
 @beartype
 def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
     """Replace all files in `r` with contents of `remote_root`."""
-    git_copy = F.copytree(F.gitd(r), F.chk(F.mkdtemp() / "GIT"))
+    git_copy = F.copytree(F.gitd(r), M.nofile(F.mkdtemp() / "GIT"))
     r.close()
     root: NoFile = F.rmtree(F.root(r))
     del r
