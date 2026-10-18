@@ -295,7 +295,7 @@ def mungediff(
     b = b or a
 
     if a is None or b is None:
-        return [] # nothing we can diff
+        return []  # nothing we can diff
 
     if is_ignorable(a_root, Path(a)) or is_ignorable(b_root, Path(b)):
         return []
