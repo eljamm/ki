@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ki"
-version = "0.0.18a"
+version = "0.0.19a"
 description = "version control for Anki collections"
 readme = "README.md"
 license = "AGPL-3.0-only"
