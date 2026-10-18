@@ -8,6 +8,7 @@ import textwrap
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
+from typing import NamedTuple
 
 import git
 import whatthepatch
@@ -142,6 +143,14 @@ class Delta:
     status: GitChangeType
     path: File
     relpath: Path
+
+
+@beartype
+class Paths(NamedTuple):
+    """A pair of paths, one per side of a git diff."""
+
+    a: Path
+    b: Path
 
 
 @beartype

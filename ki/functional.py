@@ -24,6 +24,7 @@ from beartype.typing import (
     Callable,
     Generator,
     Iterable,
+    TypeIs,
     TypeVar,
 )
 from colorama import Fore, Style
@@ -438,7 +439,7 @@ def init(targetdir: Dir) -> tuple[git.Repo, str]:
 
 
 @beartype
-def isfile(p: Path) -> bool:
+def isfile(p: Path) -> TypeIs[File]:
     """Check if `p` is a File."""
     return isinstance(p, File)
 

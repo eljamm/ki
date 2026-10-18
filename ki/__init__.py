@@ -28,7 +28,6 @@ import sqlite3
 import subprocess
 import sys
 import time
-from collections import namedtuple
 from functools import reduce
 from itertools import chain, starmap, tee
 from pathlib import Path
@@ -101,6 +100,7 @@ from ki.types import (
     Notetype,
     NotetypeCollisionWarning,
     NotetypeMismatchError,
+    Paths,
     PlannedLink,
     PushResult,
     RenamedMediaFileWarning,
@@ -301,9 +301,8 @@ def mungediff(
         return []
 
     # Get absolute and relative paths to 'a' and 'b'.
-    AB = namedtuple("AB", "a b")
-    files = AB(F.chk(a_root / a), F.chk(b_root / b))
-    rels = AB(Path(a), Path(b))
+    files = Paths(F.chk(a_root / a), F.chk(b_root / b))
+    rels = Paths(Path(a), Path(b))
 
     if d.change_type == DELETED.value:
         if not F.isfile(files.a):
@@ -312,6 +311,8 @@ def mungediff(
     if not F.isfile(files.b):
         return [DiffTargetFileNotFoundWarning(rels.b)]
     if d.change_type == RENAMED.value:
+        if not F.isfile(files.a):
+            return [DeletedFileNotFoundWarning(rels.a)]
         a_delta = Delta(GitChangeType.DELETED, files.a, rels.a)
         b_delta = Delta(GitChangeType.ADDED, files.b, rels.b)
         a_decknote, b_decknote = parse(a_delta), parse(b_delta)
