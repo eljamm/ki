@@ -13,10 +13,10 @@ from pathlib import Path
 import anki
 import git
 from anki.collection import Collection
-from anki.decks import DeckTreeNode
+from anki.decks import DeckId, DeckTreeNode
 from anki.errors import NotFoundError
 from beartype import beartype
-from beartype.typing import Any, Iterable, cast
+from beartype.typing import Any, Iterable
 from lark import Lark
 
 import ki.functional as F
@@ -422,30 +422,49 @@ def deckd(deck_name: str, targetdir: Dir) -> Dir:
     return F.force_mkdir(deck_path)
 
 
+@beartype
+def deckfields(
+    col: Collection, targetd: Dir, node: DeckTreeNode
+) -> tuple[DeckId, str, list[Deck]]:
+    """Get the deck id, name, and subdecks for `Deck`."""
+    did = DeckId(node.deck_id)
+    children = [M.decknode(col, targetd, child) for child in node.children]
+    return did, col.decks.name(did), children
+
+
 @curried
 @beartype
-def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root | Deck:
-    """Get the deck directory and did for a decknode."""
-    did = root.deck_id
-    name = col.decks.name(did)
-    children = cast(
-        list[Deck], [M.tree(col, targetd, child) for child in root.children]
+def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root:
+    """
+    Get the deck tree, i.e. the root deck and everything beneath it.
+
+    `root` must be the root deck, i.e. the root of `col.decks.deck_tree()`,
+    which is Anki's synthetic deck with id 0, not the "Default" deck.
+    """
+    did = DeckId(root.deck_id)
+    if did != 0:
+        raise ValueError(f"Expected the root deck, got '{col.decks.name(did)}'")
+    _, name, children = M.deckfields(col, targetd, root)
+    return Root(
+        did=did,
+        node=root,
+        deckd=None,
+        mediad=None,
+        fullname=name,
+        children=children,
     )
-    if root.deck_id == 0:
-        deckdir, mediadir = None, None
-        return Root(
-            did=did,
-            node=root,
-            deckd=None,
-            mediad=None,
-            fullname=name,
-            children=children,
-        )
+
+
+@curried
+@beartype
+def decknode(col: Collection, targetd: Dir, node: DeckTreeNode) -> Deck:
+    """Get the deck directory and did for a deck node beneath the root deck."""
+    did, name, children = M.deckfields(col, targetd, node)
     deckdir = M.deckd(name, targetd)
     mediadir: Dir = F.force_mkdir(deckdir / MEDIA)
     return Deck(
         did=did,
-        node=root,
+        node=node,
         deckd=deckdir,
         mediad=mediadir,
         fullname=name,

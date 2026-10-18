@@ -950,8 +950,8 @@ def write_decks(
     with open(targetdir / MODELS_FILE, "w", encoding=UTF8) as f:
         json.dump(models, f, ensure_ascii=False, indent=4, sort_keys=True)
 
-    # Construct an iterable of all decks except the trivial deck.
-    root: Deck = M.tree(col, targetdir, col.decks.deck_tree())
+    # Construct an iterable of all decks except the root deck.
+    root: Root = M.tree(col, targetdir, col.decks.deck_tree())
     collisions, decks = F.part(lambda d: MEDIA in d.fullname, postorder(root))
     if any(True for _ in collisions):
         warn(MediaDirectoryDeckNameCollisionWarning())
