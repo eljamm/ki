@@ -165,13 +165,13 @@ TYPECHANGED = GitChangeType.TYPECHANGED
 @beartype
 def do(f: Callable[[Any], Any], xs: Iterable[Any]) -> None:
     """Perform some action on an iterable."""
-    list(map(f, xs))
+    _ = list(map(f, xs))
 
 
 @beartype
 def stardo(f: Callable[[Any], Any], xs: Iterable[Any]) -> None:
     """Perform some action on an iterable of tuples, unpacking arguments."""
-    list(starmap(f, xs))
+    _ = list(starmap(f, xs))
 
 
 @beartype
@@ -180,7 +180,7 @@ def lock(col_file: File) -> sqlite3.Connection:
     try:
         con = sqlite3.connect(col_file, timeout=0.1)
         con.isolation_level = "EXCLUSIVE"
-        con.execute("BEGIN EXCLUSIVE")
+        _ = con.execute("BEGIN EXCLUSIVE")
     except sqlite3.DatabaseError as err:
         raise SQLiteLockError(col_file, err) from err
     if sys.platform == "win32":
@@ -233,7 +233,7 @@ def cp_ki(ki_rev: KiRev, suffix: str) -> KiRepo:
     rev: Rev = F.ki_rev_to_rev(ki_rev)
     print(F.root(rev.repo))
     ephem: git.Repo = cp_repo(rev, suffix)
-    F.force_mkdir(F.root(ephem) / KI / BACKUPS_DIR)
+    _ = F.force_mkdir(F.root(ephem) / KI / BACKUPS_DIR)
     kirepo: KiRepo = M.kirepo(F.root(ephem))
     return kirepo
 
@@ -459,7 +459,7 @@ def update_note(
 
     nid = note.id
     note.tags = decknote.tags
-    note.col.update_note(note, skip_undo_entry=True)
+    _ = note.col.update_note(note, skip_undo_entry=True)
 
     # Set the deck of the given note, as well as all its cards, and create a
     # deck with this name if it doesn't already exist. See the
@@ -468,7 +468,7 @@ def update_note(
     newdid: int = note.col.decks.id(decknote.deck, create=True)
     cids = [c.id for c in note.cards()]
     if cids:
-        note.col.set_deck(cids, newdid)
+        _ = note.col.set_deck(cids, newdid)
 
     # Set notetype (also clears all fields).
     if old_notetype.id != new_notetype.id:
@@ -489,12 +489,12 @@ def update_note(
     warnings = (NoteFieldValidationWarning(nid, k, new_notetype) for k in missing)
     fields = [(key, field) for key, field in decknote.fields.items() if key in note]
     stardo(update_field(decknote, note), fields)
-    note.col.update_note(note, skip_undo_entry=True)
+    _ = note.col.update_note(note, skip_undo_entry=True)
 
     # Remove if unhealthy.
     fwarns: list[Warning] = check_fields_health(note)
     if len(fwarns) > 0:
-        note.col.remove_notes([nid])
+        _ = note.col.remove_notes([nid])
     return chain(warnings, fwarns)
 
 
@@ -582,7 +582,7 @@ def backup(kirepo: KiRepo) -> int:
     if isinstance(backup_file, File):
         return 1
 
-    F.copyfile(kirepo.col_file, F.chk(kirepo.backups_dir / name))
+    _ = F.copyfile(kirepo.col_file, F.chk(kirepo.backups_dir / name))
     return 0
 
 
@@ -591,7 +591,7 @@ def append_md5sum(dotki: Dir, tag: str, md5sum: str) -> None:
     """Append an md5sum hash to the hashes file."""
     hashes_file = dotki / HASHES_FILE
     with open(hashes_file, "a+", encoding=UTF8) as hashes_f:
-        hashes_f.write(f"{md5sum}  {tag}\n")
+        _ = hashes_f.write(f"{md5sum}  {tag}\n")
 
 
 @beartype
