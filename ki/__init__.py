@@ -710,7 +710,7 @@ def push_note(
 
 
 @beartype
-def get_header_lines(colnote) -> list[str]:
+def get_header_lines(colnote: ColNote) -> list[str]:
     """Get header of markdown representation of note."""
     lines = [
         "# Note",
