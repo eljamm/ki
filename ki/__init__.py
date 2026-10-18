@@ -252,9 +252,7 @@ def is_anki_note(path: File) -> bool:
         return False
     if lines[1] != "```\n":
         return False
-    if not re.match(r"^guid: ", lines[2]):
-        return False
-    return True
+    return bool(re.match(r"^guid: ", lines[2]))
 
 
 @beartype
@@ -279,9 +277,7 @@ def is_ignorable(root: Dir, path: Path) -> bool:
 
     # If `path` is an extant file (not a directory) and *not* a note, ignore it.
     file = F.chk(root / path)
-    if isinstance(file, File) and not is_anki_note(file):
-        return True
-    return False
+    return isinstance(file, File) and not is_anki_note(file)
 
 
 @curried
