@@ -291,7 +291,12 @@ def mungediff(
 ) -> Iterable[Delta | Warning]:
     """Extract deltas and warnings from a collection of diffs."""
     a, b = d.a_path, d.b_path
-    a, b = a if a else b, b if b else a
+    a = a or b
+    b = b or a
+
+    if a is None or b is None:
+        return [] # nothing we can diff
+
     if is_ignorable(a_root, Path(a)) or is_ignorable(b_root, Path(b)):
         return []
 
