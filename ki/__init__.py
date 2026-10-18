@@ -681,10 +681,10 @@ def push_note(
         nid: int = guids[decknote.guid].nid
         try:
             note: Note = col.get_note(nid)
-        except NotFoundError as err:
+        except NotFoundError:
             print(f"{nid = }")
             print(f"{decknote.guid = }")
-            raise err
+            raise
     else:
         nid: int = next(new_nids)
         note: Note = add_db_note(
