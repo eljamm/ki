@@ -966,7 +966,7 @@ def write_note(
     deckmap: dict[str, Deck],
     colnote: ColNote,
 ) -> File:
-    decknames = set(map(lambda c: c.col.decks.name(c.did), colnote.n.cards()))
+    decknames = {c.col.decks.name(c.did) for c in colnote.n.cards()}
     sortf = colnote.sfld
     if len(decknames) == 0:
         raise ValueError(f"No cards for note: {sortf}")
@@ -1043,7 +1043,7 @@ def symlink_deck_media(
     # Get nids for all descendant notes with media.
     descendants: list[CardId] = col.decks.cids(did=deck.did, children=True)
     cards: Iterable[Card] = map(col.get_card, descendants)
-    nids: set[NoteId] = {NOTETYPE_NID} | set(map(lambda c: c.nid, cards))
+    nids: set[NoteId] = {NOTETYPE_NID} | {c.nid for c in cards}
 
     # Get link path and target for each media file, and create the links.
     files = F.cat(map(lambda nid: media[nid], filter(lambda nid: nid in media, nids)))
