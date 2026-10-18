@@ -13,7 +13,7 @@ from typing import NamedTuple
 import git
 import whatthepatch
 from anki.collection import Card, Note
-from anki.decks import DeckTreeNode
+from anki.decks import DeckTreeNode, DeckId
 from beartype import beartype
 from beartype.typing import Any
 
@@ -28,7 +28,6 @@ HINT = (
 )
 ERROR_MESSAGE_WIDTH = 69
 DATABASE_LOCKED_MSG = "database is locked"
-DeckId = int
 
 
 # TYPES
@@ -519,6 +518,11 @@ class MissingNoteIdError(RuntimeError):
         msg = f"Failed to locate note with nid '{nid}' in Anki database."
         super().__init__(errwrap(msg))
 
+class DeckCreationFailedError(RuntimeError):
+    @beartype
+    def __init__(self, deck: str):
+        msg = f"Failed to create deck '{deck}' in Anki database."
+        super().__init__(errwrap(msg))
 
 class NotetypeMismatchError(RuntimeError):
     @beartype

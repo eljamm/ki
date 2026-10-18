@@ -39,6 +39,7 @@ import anki.collection  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import click
 import git
 from anki.cards import Card
+from anki.decks import DeckId
 from anki.collection import Collection, OpChangesWithId
 from anki.errors import NotFoundError
 from anki.models import NotetypeDict
@@ -74,6 +75,7 @@ from ki.types import (
     ColNote,
     Deck,
     DeckNote,
+    DeckCreationFailedError,
     DeletedFileNotFoundWarning,
     Delta,
     DiffTargetFileNotFoundWarning,
@@ -121,7 +123,7 @@ logging.basicConfig(level=logging.INFO)
 TQ = F.progressbar
 
 T = TypeVar("T")
-NoteId, DeckId, CardId = int, int, int
+NoteId, CardId = int, int
 CardFileMap = dict[DeckId, list[CardFile]]
 
 GITATTRS_FILE = ".gitattributes"
@@ -467,7 +469,10 @@ def update_note(
     # deck with this name if it doesn't already exist. See the
     # comments/docstrings in the implementation of the
     # `anki.decks.DeckManager.id()` method.
-    newdid: int = note.col.decks.id(decknote.deck, create=True)
+    newdid = note.col.decks.id(decknote.deck, create=True)
+    if newdid is None:
+        raise DeckCreationFailedError(decknote.deck)
+
     cids = [c.id for c in note.cards()]
     if cids:
         _ = note.col.set_deck(cids, newdid)
