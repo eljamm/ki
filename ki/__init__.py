@@ -331,7 +331,7 @@ def diff2(
     diffidx = repo.commit("HEAD~1").diff(repo.commit("HEAD"))
 
     # Get the diffs for each change type (e.g. 'DELETED').
-    return chain(*map(mungediff(parse, a_root, b_root), diffidx))
+    return chain.from_iterable([mungediff(parse, a_root, b_root, d) for d in diffidx])
 
 
 @beartype

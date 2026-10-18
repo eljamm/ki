@@ -66,7 +66,7 @@ SLUG_REGEX = re.compile(r"[^\w\s\-" + EMOJIS + PICTOGRAPHS + TRANSPORTS + FLAGS 
 
 
 @beartype
-def curried(func: Callable[[Any, ...], T]) -> Callable[[Any, ...], T]:
+def curried(func: Callable[..., T]) -> Callable[..., T]:
     """A decorator that makes the function curried
 
     Usage example:
@@ -487,7 +487,7 @@ def progressbar(xs: Iterable[T], s: str) -> Iterable[T]:
 
 @beartype
 def starfilter(
-    f: Callable[[Any, ...], bool], xs: Iterable[tuple[Any, ...]]
+    f: Callable[..., bool], xs: Iterable[tuple[Any, ...]]
 ) -> Iterable[tuple[Any, ...]]:
     """Filter an iterable, automatically unpacking tuple arguments."""
     return filter(lambda x: f(*x), xs)
