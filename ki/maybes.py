@@ -16,7 +16,7 @@ from anki.collection import Collection
 from anki.decks import DeckTreeNode
 from anki.errors import NotFoundError
 from beartype import beartype
-from beartype.typing import Any, Iterable
+from beartype.typing import Any, Iterable, cast
 from lark import Lark
 
 import ki.functional as F
@@ -428,7 +428,9 @@ def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root | Deck:
     """Get the deck directory and did for a decknode."""
     did = root.deck_id
     name = col.decks.name(did)
-    children: list[Deck] = list(map(M.tree(col, targetd), root.children))
+    children = cast(
+        list[Deck], [M.tree(col, targetd, child) for child in root.children]
+    )
     if root.deck_id == 0:
         deckdir, mediadir = None, None
         return Root(
