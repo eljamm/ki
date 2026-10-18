@@ -509,7 +509,7 @@ def submodules(r: git.Repo) -> dict[Path, Submodule]:
     """Map submodule relative roots to `Submodule`s."""
     sms: Iterable[git.Submodule] = r.submodules
     sms = filter(lambda sm: sm.exists() and sm.module_exists(), sms)
-    subs: Iterable[Submodule] = map(M.submodule(r), sms)
+    subs: Iterable[Submodule] = (M.submodule(r, sm) for sm in sms)
     return {s.rel_root: s for s in subs}
 
 

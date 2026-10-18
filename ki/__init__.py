@@ -742,7 +742,7 @@ def localmedia(s: str, regex: str) -> Iterable[str]:
 def media_filenames_in_field(col: Collection, s: str) -> Iterable[str]:
     """A copy of `MediaManager.files_in_str()`, but without LaTeX rendering."""
     s = (s.strip()).replace('"', "")
-    return F.cat(map(localmedia(s), col.media.regexps))
+    return F.cat(localmedia(s, regex) for regex in col.media.regexps)
 
 
 @curried
@@ -831,7 +831,9 @@ def copy_media_files(
     paths = set(filter(lambda f: str(f).startswith("_"), paths))
     models = filter(lambda m: int(m["id"]) in mids, col.models.all())
 
-    mediasets = map(copy_notetype_media(media_dir, media_target_dir, paths), models)
+    mediasets = (
+        copy_notetype_media(media_dir, media_target_dir, paths, m) for m in models
+    )
     media[NOTETYPE_NID] = reduce(lambda x, y: x.union(y), mediasets, set())
 
     return media
@@ -1049,7 +1051,7 @@ def symlink_deck_media(
 
     # Get link path and target for each media file, and create the links.
     files = F.cat(map(lambda nid: media[nid], filter(lambda nid: nid in media, nids)))
-    plinks = filter(None, map(planned_link(parents, deck), files))
+    plinks = filter(None, (planned_link(parents, deck, f) for f in files))
     do(M.link(targetd), plinks)
 
 
@@ -1593,7 +1595,12 @@ def write_collection(
     timestamp_ns: int = time.time_ns()
     new_nids: Iterator[int] = itertools.count(int(timestamp_ns / 1e6))
     decknotes: Iterable[DeckNote] = map(parse, deltas)
-    do(warn, F.cat(map(push_note(tempcol, timestamp_ns, guids, new_nids), decknotes)))
+    do(
+        warn,
+        F.cat(
+            push_note(tempcol, timestamp_ns, guids, new_nids, dn) for dn in decknotes
+        ),
+    )
 
     # It is always safe to save changes to the DB, since the DB is a copy.
     tempcol.close()
@@ -1605,13 +1612,14 @@ def write_collection(
 
     # Add media files to collection.
     media_files = F.rglob(head_kirepo.root, MEDIA_FILE_RECURSIVE_PATTERN)
-    mbytes: Iterable[MediaBytes] = map(mediabytes(col), media_files)
+    mbytes: Iterable[MediaBytes] = (mediabytes(col, f) for f in media_files)
 
     # Skip media files whose twin in collection has same name and same data.
     mbytes = filter(lambda m: m.old == b"" or m.old != m.new, mbytes)
 
     # Add (and possibly rename) media paths.
-    renames = filter(lambda a: a.file.name != a.new_name, map(addmedia(col), mbytes))
+    added = (addmedia(col, m) for m in mbytes)
+    renames = filter(lambda a: a.file.name != a.new_name, added)
     warnings = map(lambda r: RenamedMediaFileWarning(r.file.name, r.new_name), renames)
     do(warn, warnings)
     col.close()
