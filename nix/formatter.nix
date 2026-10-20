@@ -54,10 +54,16 @@ lib.makeExtensible (self: {
       config = self'.check.config;
 
       script = pkgs.writeShellScriptBin "pre-commit-run" ''
-        ${lib.getExe self'.config.package} run \
-          --all-files \
-          --config \
-        ${self'.config.configFile}
+        run() {
+          ${lib.getExe self'.config.package} run \
+            --all-files \
+            --config \
+          ${self'.config.configFile} \
+            "$@"
+        }
+
+        run # treefmt
+        run --hook-stage manual
       '';
 
       shellHook = self'.check.shellHook;
