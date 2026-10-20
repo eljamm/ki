@@ -2,6 +2,9 @@
   lib,
   pkgs,
   inputs,
+
+  system,
+  root,
   ...
 }:
 lib.makeExtensible (self: {
@@ -37,4 +40,18 @@ lib.makeExtensible (self: {
 
   # development shell that contains all formatters
   shell = self.eval.config.build.devShell;
+
+  pre-commit-hook = inputs.git-hooks.lib.${system}.run {
+    src = root;
+    hooks.treefmt.enable = true;
+    hooks.treefmt.packageOverrides.treefmt = self.package;
+  };
+
+  pre-commit-run = pkgs.writeShellScriptBin "pre-commit-run" ''
+    ${lib.getExe self.pre-commit-hook.config.package} \
+      run \
+      --all-files \
+      --config \
+    ${self.pre-commit-hook.config.configFile}
+  '';
 })

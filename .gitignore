@@ -4,6 +4,10 @@
 dist-newstyle/
 experiments/
 
+# === Misc ===
+
+.pre-commit-config.yaml
+
 # === Nix ===
 
 .envrc

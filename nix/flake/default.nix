@@ -14,6 +14,10 @@ lib.makeExtensible (self: {
     devShells = default.shells;
     formatter = default.formatter.package;
     packages = default.devPkgs;
-    checks = self.perSystem.packages;
+    checks = self.perSystem.packages // {
+      inherit (default.formatter)
+        pre-commit-hook
+        ;
+    };
   };
 })

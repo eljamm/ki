@@ -12,6 +12,7 @@
 
     packages = with pkgs; [
       formatter.package
+      formatter.pre-commit-run
       gitMinimal
       uv
     ];
@@ -36,6 +37,9 @@
         # activate python venv
         export VIRTUAL_ENV="$PROJECT_ROOT/.venv"
         export PATH="$VIRTUAL_ENV/bin:$PATH"
+
+        # install git hooks
+        ${formatter.pre-commit-hook.shellHook}
       '';
   };
 }
