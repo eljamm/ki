@@ -1450,7 +1450,7 @@ def test_copy_media_files_finds_notetype_media(tmpfs: None):
     for media_set in media.values():
         media_files = media_files | media_set
     assert len(media_files) == 2
-    media_files = sorted(list(media_files))
+    media_files = sorted(media_files)
     von_neumann: File = media_files[1]
     assert "_vonNeumann" in str(von_neumann)
 
