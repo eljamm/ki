@@ -14,6 +14,7 @@
       formatter.hooks.pre-commit.script
       formatter.package
       gitMinimal
+      pinact
       uv
     ];
 
