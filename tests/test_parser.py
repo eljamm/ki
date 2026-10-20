@@ -175,7 +175,7 @@ def test_too_many_hashes_for_fieldname():
     assert err.line == 11
     assert err.column == 3
     assert err.token == "#"
-    assert err.expected == set(["ANKINAME"])
+    assert err.expected == {"ANKINAME"}
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "##"
@@ -209,7 +209,7 @@ def test_missing_fieldname():
     assert err.line == 11
     assert err.column == 7
     assert err.token == "\nr"
-    assert err.expected == set(["ANKINAME"])
+    assert err.expected == {"ANKINAME"}
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "##"
@@ -243,7 +243,7 @@ def test_missing_title():
     assert err.line == 1
     assert err.column == 2
     assert err.token == "\n```"
-    assert err.expected == set(["TITLENAME"])
+    assert err.expected == {"TITLENAME"}
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "#"
@@ -277,7 +277,7 @@ def test_missing_model():
     assert err.line == 4
     assert err.column == 1
     assert err.token == "notetype"
-    assert err.expected == set(["NOTETYPE"])
+    assert err.expected == {"NOTETYPE"}
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "guid: 123412341234\n"
@@ -311,7 +311,7 @@ def test_whitespace_model():
     assert err.line == 4
     assert err.column == 1
     assert err.token == "notetype"
-    assert err.expected == set(["NOTETYPE"])
+    assert err.expected == {"NOTETYPE"}
     assert len(err.token_history) == 1
     prev = err.token_history.pop()
     assert str(prev) == "guid: 123412341234\n"
@@ -354,7 +354,7 @@ def test_bad_field_single_char_name_validation():
         assert str(prev) == "##"
         if isinstance(err, UnexpectedToken):
             assert err.token in char + "\n"
-            assert err.expected == set(["ANKINAME"])
+            assert err.expected == {"ANKINAME"}
         if isinstance(err, UnexpectedCharacters):
             assert err.char == char
 
@@ -402,7 +402,7 @@ def test_fieldname_start_validation():
         assert str(prev) == "##"
         if isinstance(err, UnexpectedToken):
             assert err.token in fieldname + "\n"
-            assert err.expected == set(["ANKINAME"])
+            assert err.expected == {"ANKINAME"}
         if isinstance(err, UnexpectedCharacters):
             assert err.char == char
 
@@ -812,7 +812,7 @@ def test_tag_validation():
         if isinstance(err, UnexpectedToken):
             remainder = "\n".join(tags.split("\n")[1:]) + "\n"
             assert err.token in remainder
-            assert err.expected == set(["TAGNAME", "TRIPLEBACKTICKS"])
+            assert err.expected == {"TAGNAME", "TRIPLEBACKTICKS"}
         if isinstance(err, UnexpectedCharacters):
             assert err.char == char
 
