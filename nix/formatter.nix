@@ -16,7 +16,6 @@ lib.makeExtensible (self: {
     programs.nixfmt.enable = true;
 
     # python
-    programs.ruff-check.enable = true;
     programs.ruff-format.enable = true;
 
     # ci
@@ -47,6 +46,9 @@ lib.makeExtensible (self: {
         src = root;
         hooks.treefmt.enable = true;
         hooks.treefmt.packageOverrides.treefmt = self.package;
+        hooks.ruff.enable = true;
+        # https://pre-commit.com/#confining-hooks-to-run-at-certain-stages
+        hooks.ruff.stages = [ "manual" ];
       };
 
       config = self'.check.config;
