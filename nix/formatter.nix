@@ -84,7 +84,7 @@ lib.makeExtensible (self: {
             git add .
             git -c user.name=CI -c user.email=ci@sandbox commit -qm init
 
-            ${lib.getExe self'.script}
+            ${lib.getExe self'.script} | tee $out
           '';
     });
   };
