@@ -51,6 +51,8 @@ lib.makeExtensible (self: {
         hooks.ruff.stages = [ "manual" ];
       };
 
+      shellHook = self'.check.shellHook;
+
       config = self'.check.config;
 
       script = pkgs.writeShellScriptBin "pre-commit-run" ''
@@ -66,7 +68,26 @@ lib.makeExtensible (self: {
         run --hook-stage manual
       '';
 
-      shellHook = self'.check.shellHook;
+      script-ci =
+        pkgs.runCommand "pre-commit-run-ci"
+          {
+            nativeBuildInputs = with pkgs; [
+              gitMinimal
+              writableTmpDirAsHomeHook
+            ];
+          }
+          # bash
+          ''
+            cp -R ${root} "$HOME/root"
+            chmod -R u+w "$HOME/root"
+            cd "$HOME/root"
+
+            git init -q
+            git add .
+            git -c user.name=CI -c user.email=ci@sandbox commit -qm init
+
+            ${lib.getExe self'.script}
+          '';
     });
   };
 })

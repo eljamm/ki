@@ -15,7 +15,7 @@ lib.makeExtensible (self: {
     formatter = default.formatter.package;
     packages = default.devPkgs;
     checks = self.perSystem.packages // {
-      pre-commit-hook = default.formatter.hooks.pre-commit.check;
+      pre-commit-hook = default.formatter.hooks.pre-commit.script-ci;
     };
   };
 })
