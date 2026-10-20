@@ -11,8 +11,8 @@
     ];
 
     packages = with pkgs; [
+      formatter.hooks.pre-commit.script
       formatter.package
-      formatter.pre-commit-run
       gitMinimal
       uv
     ];
@@ -39,7 +39,7 @@
         export PATH="$VIRTUAL_ENV/bin:$PATH"
 
         # install git hooks
-        ${formatter.pre-commit-hook.shellHook}
+        ${formatter.hooks.pre-commit.shellHook}
       '';
   };
 }

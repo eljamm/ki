@@ -41,17 +41,24 @@ lib.makeExtensible (self: {
   # development shell that contains all formatters
   shell = self.eval.config.build.devShell;
 
-  pre-commit-hook = inputs.git-hooks.lib.${system}.run {
-    src = root;
-    hooks.treefmt.enable = true;
-    hooks.treefmt.packageOverrides.treefmt = self.package;
-  };
+  hooks = {
+    pre-commit = lib.fix (self': {
+      check = inputs.git-hooks.lib.${system}.run {
+        src = root;
+        hooks.treefmt.enable = true;
+        hooks.treefmt.packageOverrides.treefmt = self.package;
+      };
 
-  pre-commit-run = pkgs.writeShellScriptBin "pre-commit-run" ''
-    ${lib.getExe self.pre-commit-hook.config.package} \
-      run \
-      --all-files \
-      --config \
-    ${self.pre-commit-hook.config.configFile}
-  '';
+      config = self'.check.config;
+
+      script = pkgs.writeShellScriptBin "pre-commit-run" ''
+        ${lib.getExe self'.config.package} run \
+          --all-files \
+          --config \
+        ${self'.config.configFile}
+      '';
+
+      shellHook = self'.check.shellHook;
+    });
+  };
 })
