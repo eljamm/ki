@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - *nix:* Run manual stage hooks in pre-commit script - ([115980a](https://github.com/eljamm/ki/commit/115980ab5e405dc4e12d12ece0f91087aea86b47))
 - *nix:* Add script to check pre-commit hook in CI - ([03a82b3](https://github.com/eljamm/ki/commit/03a82b3443758d412fe46d11442d3abaffe6a953))
 - Add NotGitRepoError - ([0f08829](https://github.com/eljamm/ki/commit/0f0882930e91c5e8f706e108044e54fa5fa961b8))
+- Add git-cliff and generate a changelog - ([9270e9f](https://github.com/eljamm/ki/commit/9270e9f3ac08a8b00f0e55cf69efcfcfc04a71ea))
 
 
 ### Other
