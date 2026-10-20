@@ -1055,7 +1055,7 @@ def symlink_deck_media(
     nids: set[NoteId] = {NOTETYPE_NID} | {c.nid for c in cards}
 
     # Get link path and target for each media file, and create the links.
-    files = F.cat(map(lambda nid: media[nid], filter(lambda nid: nid in media, nids)))
+    files = F.cat(media[nid] for nid in filter(lambda nid: nid in media, nids))
     plinks = filter(None, (planned_link(parents, deck, f) for f in files))
     do(M.link(targetd), plinks)
 
