@@ -11,6 +11,7 @@
     ];
 
     packages = with pkgs; [
+      git-cliff # changelog
       formatter.hooks.pre-commit.script
       formatter.package
       gitMinimal
