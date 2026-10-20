@@ -1592,8 +1592,8 @@ def test_media_filenames_in_field_strips_newlines(mocker: MockerFixture):
         "(?i)(<object\\b[^>]* data=(?!['\\\"])(?P<fname>[^ >]+)[^>]*?>)",
     ]
     fnames: Iterable[str] = media_filenames_in_field(mock, s)
-    assert not any(map(lambda f: "\n" in f, fnames))
-    assert not any(map(lambda f: "\\n" in f, fnames))
+    assert not any("\n" in f for f in fnames)
+    assert not any("\\n" in f for f in fnames)
 
 
 def test_write_decks_skips_root_deck(tmp_path: Path):

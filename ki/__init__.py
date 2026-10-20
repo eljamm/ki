@@ -1470,10 +1470,10 @@ def _pull2(kirepo: KiRepo, col: Collection) -> Collection:
     dels: Iterable[git.Diff] = diffidx.iter_change_type(DELETED.value)
     dels = filter(lambda d: d.a_path != GITMODULES_FILE, dels)
     dels = filter(lambda d: F.isfile(F.chk(F.root(lca_repo) / d.a_path)), dels)
-    a_paths: Iterable[str] = set(map(F.git_rm(lca_repo), map(lambda d: d.a_path, dels)))
+    a_paths: Iterable[str] = set(map(F.git_rm(lca_repo), (d.a_path for d in dels)))
 
     if len(a_paths) > 0:
-        details: str = "".join(map(lambda a: f"Remove '{a}'\n", a_paths))
+        details: str = "".join(f"Remove '{a}'\n" for a in a_paths)
         F.commitall(lca_repo, msg=f"Remove files deleted in remote.\n\n{details}")
 
     remote_root: Dir = F.root(remote_repo)
@@ -1590,9 +1590,9 @@ def write_collection(
     guids: dict[str, NoteMetadata] = get_note_metadata(tempcol)
 
     # Parse to-be-deleted notes and remove them from collection.
-    del_guids: Iterable[str] = map(lambda dd: dd.guid, map(parse, dels))
+    del_guids: Iterable[str] = (dd.guid for dd in map(parse, dels))
     del_guids = set(filter(lambda g: g in guids, del_guids))
-    del_nids: Iterable[NoteId] = map(lambda g: guids[g].nid, del_guids)
+    del_nids: Iterable[NoteId] = (guids[g].nid for g in del_guids)
     tempcol.remove_notes(list(del_nids))
 
     # Push changes for all other notes.
@@ -1625,7 +1625,7 @@ def write_collection(
     # Add (and possibly rename) media paths.
     added = (addmedia(col, m) for m in mbytes)
     renames = filter(lambda a: a.file.name != a.new_name, added)
-    warnings = map(lambda r: RenamedMediaFileWarning(r.file.name, r.new_name), renames)
+    warnings = (RenamedMediaFileWarning(r.file.name, r.new_name) for r in renames)
     do(warn, warnings)
     col.close()
 
