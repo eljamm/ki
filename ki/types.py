@@ -447,6 +447,17 @@ class NotKiRepoError(RuntimeError):
         super().__init__(errwrap(msg))
 
 
+class NotGitRepoError(RuntimeError):
+    @beartype
+    def __init__(self, root: Path):
+        top = f"fatal: not a git repository: '{root}'"
+        msg = """
+        This path is not recognized as a git repository.
+        Check that the `.git` directory is present and valid.
+        """
+        super().__init__(f"{top}\n\n{errwrap(msg)}")
+
+
 class UpdatesRejectedError(RuntimeError):
     @beartype
     def __init__(self, col_file: File):

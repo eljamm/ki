@@ -49,6 +49,7 @@ from ki.types import (
     NoteFieldKeyError,
     Notetype,
     NotetypeKeyError,
+    NotGitRepoError,
     NotKiRepoError,
     PlannedLink,
     PseudoFile,
@@ -193,10 +194,8 @@ def repo(root: Dir) -> git.Repo:
     """Read a git repo safely."""
     try:
         repository = git.Repo(root)
-    except git.InvalidGitRepositoryError:
-        # TODO: Make this error more descriptive. It currently sucks. A test
-        # should be written for 'kirepo()' in which we return this error.
-        raise
+    except git.InvalidGitRepositoryError as err:
+        raise NotGitRepoError(root) from err
     return repository
 
 

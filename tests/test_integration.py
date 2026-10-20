@@ -27,6 +27,7 @@ from ki.types import (
     GitHeadRefNotFoundError,
     MissingFieldOrdinalError,
     Notetype,
+    NotGitRepoError,
     NotKiRepoError,
     SQLiteLockError,
     TargetExistsError,
@@ -528,9 +529,9 @@ def test_pull_displays_errors_from_repo_initialization(mocker: MockerFixture):
     n3 = ("Basic", ["Default"], 3, ["f", "g"])
     editcol(a, adds=[n3])
     git.Repo.init(Path("."))
-    effects = [git.InvalidGitRepositoryError()]
+    effects = [NotGitRepoError(Path("."))]
     mocker.patch("ki.M.repo", side_effect=effects)
-    with pytest.raises(git.InvalidGitRepositoryError):
+    with pytest.raises(NotGitRepoError):
         pull()
 
 

@@ -114,6 +114,7 @@ from ki.types import (
     NoFile,
     NoteFieldKeyError,
     NotetypeKeyError,
+    NotGitRepoError,
     PseudoFile,
     StrangeExtantPathError,
     TargetExistsError,
@@ -1110,6 +1111,17 @@ def test_maybe_kirepo_displays_nice_errors(tmpfs: None):
     with pytest.raises(Exception) as error:
         M.kirepo(targetdir)
     assert "fatal: not a ki repository" in str(error.exconly())
+    F.rmtree(targetdir)
+
+    # Case where `.ki/` exists but `.git/` does not.
+    clone(ORIGINAL.col_file)
+    os.chdir("../")
+    targetdir: Dir = F.chk(Path(ORIGINAL.repodir))
+    F.rmtree(targetdir / ".git")
+    with pytest.raises(NotGitRepoError) as error:
+        M.kirepo(targetdir)
+    assert "fatal: not a git repository" in str(error.exconly())
+    gc.collect()
     F.rmtree(targetdir)
 
     # Case where `.ki/backups` directory doesn't exist.
