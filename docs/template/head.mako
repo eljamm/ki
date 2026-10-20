@@ -22,5 +22,7 @@
 </%def>
 
 <style>${homelink()}</style>
+% if module:
 <link rel="canonical" href="${module.url()[:-len('index.html')] if module.is_package else module.url()}">
+% endif
 <link rel="icon" href="u1F367-shavedice.svg">
