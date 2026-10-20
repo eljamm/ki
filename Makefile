@@ -1,9 +1,9 @@
 default:
 	echo "No-op."
 install:
-	pip install -e .
-documentation:
-	pdoc --html ki --template-dir docs/template/ --force
+	uv sync --extra dev --frozen
+documentation: install
+	uv run pdoc --html ki --template-dir docs/template/ --force
 	cp html/ki/* docs/
 	cd docs && ./a.sh
 	rm -rf html/
