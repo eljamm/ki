@@ -423,7 +423,7 @@ def test_clone_preserves_leading_newlines():
     colnotes = get_notes(a)
     assert len(colnotes) == 1
     assert "<br>b" == colnotes[0].n["Back"]
-    repo, _ = clone(a)
+    _repo, _ = clone(a)
     contents = read("Default/a.md")
     assert "\n\nb\n" in contents
 

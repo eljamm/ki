@@ -1664,7 +1664,7 @@ def test_write_decks_warns_about_media_deck_name_collisions(
     col = open_collection(DECK.col_file)
     nids: Iterable[int] = col.find_notes(query="")
     colnotes: dict[int, ColNote] = {nid: M.colnote(col, nid) for nid in nids}
-    mock = mocker.patch("ki.warn")
+    _mock = mocker.patch("ki.warn")
     with pytest.raises(ValueError) as err:
         write_decks(col, Dir(tmp_path), colnotes, {})
     assert "_media" in str(err)
