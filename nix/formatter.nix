@@ -14,13 +14,7 @@ lib.makeExtensible (self: {
     projectRootFile = "default.nix";
 
     programs.nixfmt.enable = true;
-
-    # python
-    programs.ruff-format.enable = true;
-
-    # ci
-    programs.actionlint.enable = true;
-    programs.zizmor.enable = true;
+    programs.ruff-format.enable = true; # python
 
     # misc
     settings.formatter.editorconfig-checker = {
@@ -44,11 +38,15 @@ lib.makeExtensible (self: {
     pre-commit = lib.fix (self': {
       check = inputs.git-hooks.lib.${system}.run {
         src = root;
+        hooks.actionlint.enable = true;
+        hooks.ruff.enable = true;
         hooks.treefmt.enable = true;
         hooks.treefmt.packageOverrides.treefmt = self.package;
-        hooks.ruff.enable = true;
+        hooks.zizmor.enable = true;
         # https://pre-commit.com/#confining-hooks-to-run-at-certain-stages
+        hooks.actionlint.stages = [ "manual" ];
         hooks.ruff.stages = [ "manual" ];
+        hooks.zizmor.stages = [ "manual" ];
       };
 
       shellHook = self'.check.shellHook;
