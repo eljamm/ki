@@ -1,3 +1,5 @@
+PORT_DOCS ?= 26751
+
 default:
 	echo "No-op."
 install:
@@ -7,6 +9,8 @@ documentation: install
 	cp html/ki/* docs/
 	cd docs && ./a.sh
 	rm -rf html/
+docs-preview: documentation
+	uv run pdoc --http localhost:$(PORT_DOCS) ki --template-dir docs/template/
 clean:
 	rm -rf docs/*.html
 	rm -rf *.egg-info
