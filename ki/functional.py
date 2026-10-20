@@ -29,7 +29,6 @@ from beartype.typing import (
 from colorama import Fore, Style
 from tqdm import tqdm
 
-import ki.functional as F
 from ki.types import (
     Dir,
     EmptyDir,
@@ -186,7 +185,7 @@ def walk(
     leaves = frozenset()
     for root, _, files in os.walk(directory):
         root = Dir(root)
-        leaves |= frozenset({F.chk(root / f) for f in files})
+        leaves |= frozenset({chk(root / f) for f in files})
     return leaves
 
 
@@ -271,7 +270,7 @@ def force_mkdir(path: Path) -> Dir:
 @beartype
 def chdir(directory: Dir) -> Dir:
     """Changes working directory and returns old cwd."""
-    old: Dir = F.cwd()
+    old: Dir = cwd()
     os.chdir(directory)
     return old
 
@@ -303,7 +302,7 @@ def copyfile(source: File, target: File | NoFile) -> File:
 @beartype
 def rglob(d: Dir, pattern: str) -> list[File]:
     """Call d.rglob() and returns only files."""
-    files = filter(lambda p: isinstance(p, File), map(F.chk, d.rglob(pattern)))
+    files = filter(lambda p: isinstance(p, File), map(chk, d.rglob(pattern)))
     return list(files)
 
 
@@ -400,9 +399,9 @@ def rmsm(repo: git.Repo, sm: git.Submodule) -> git.Commit:
     # Remove the submodule root and delete its .git directory.
     sm_root = Path(sm.module().working_tree_dir)
     repo.git.rm(sm_root, cached=True)
-    dotgit = F.chk(sm_root / GIT)
+    dotgit = chk(sm_root / GIT)
     if isinstance(dotgit, Dir):
-        F.rmtree(dotgit)
+        rmtree(dotgit)
     else:
         dotgit.unlink(missing_ok=True)
 
@@ -417,8 +416,8 @@ def unsubmodule(repo: git.Repo) -> git.Repo:
     Un-submodule all the git submodules (converts them to ordinary subdirs and
     destroys commit history). Commit the changes to the main repository.
     """
-    _: list[git.Commit] = list(map(F.rmsm(repo), repo.submodules))
-    gitmodules_file: Path = F.root(repo) / GITMODULES_FILE
+    _: list[git.Commit] = list(map(rmsm(repo), repo.submodules))
+    gitmodules_file: Path = root(repo) / GITMODULES_FILE
     if gitmodules_file.exists():
         repo.git.rm(gitmodules_file)
         _ = repo.index.commit("Remove `.gitmodules` file.")

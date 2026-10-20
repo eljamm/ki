@@ -19,7 +19,6 @@ from beartype.typing import Any, Iterable
 from lark import Lark
 
 import ki.functional as F
-import ki.maybes as M
 from ki.transformer import NoteTransformer
 from ki.types import (
     MODELS_FILE,
@@ -134,8 +133,8 @@ def nofile(path: Path) -> NoFile:
     resolve-time, which is when this function was called.
     """
     path = path.resolve()
-    path = M.nopath(path)
-    M.xdir(path.parent)
+    path = nopath(path)
+    xdir(path.parent)
     return NoFile(path)
 
 
@@ -183,7 +182,7 @@ def emptydir(path: Path) -> Dir:
     Attempt to instantiate an empty Dir.
     """
     # Check if it's an extant directory.
-    directory: Dir = M.xdir(path)
+    directory: Dir = xdir(path)
     if F.is_empty(directory):
         return EmptyDir(Path(directory).resolve())
     raise ExpectedEmptyDirectoryButGotNonEmptyDirectoryError(directory)
@@ -196,7 +195,7 @@ def repo(root: Dir) -> git.Repo:
         repository = git.Repo(root)
     except git.InvalidGitRepositoryError as err:
         # TODO: Make this error more descriptive. It currently sucks. A test
-        # should be written for 'M.kirepo()' in which we return this error.
+        # should be written for 'kirepo()' in which we return this error.
         raise err
     return repository
 
@@ -217,19 +216,19 @@ def kirepo(cwd: Dir) -> KiRepo:
 
     # Root directory and ki directory of repo now guaranteed to exist.
     root = current
-    repository: git.Repo = M.repo(root)
+    repository: git.Repo = repo(root)
 
     # Check that relevant files in .ki/ subdirectory exist.
-    backups_dir = M.xdir(kid / BACKUPS_DIR, info=BACKUPS_DIR_INFO)
-    config_file = M.xfile(kid / CONFIG_FILE, info=CONFIG_FILE_INFO)
-    hashes_file = M.xfile(kid / HASHES_FILE, info=HASHES_FILE_INFO)
-    models_file = M.xfile(root / MODELS_FILE, info=MODELS_FILE_INFO)
+    backups_dir = xdir(kid / BACKUPS_DIR, info=BACKUPS_DIR_INFO)
+    config_file = xfile(kid / CONFIG_FILE, info=CONFIG_FILE_INFO)
+    hashes_file = xfile(kid / HASHES_FILE, info=HASHES_FILE_INFO)
+    models_file = xfile(root / MODELS_FILE, info=MODELS_FILE_INFO)
 
     # Check that collection file exists.
     config = configparser.ConfigParser()
     config.read(config_file)
     col_file = Path(config[REMOTE_CONFIG_SECTION][COLLECTION_FILE_PATH_CONFIG_FIELD])
-    col_file = M.xfile(col_file, info=COL_FILE_INFO)
+    col_file = xfile(col_file, info=COL_FILE_INFO)
 
     return KiRepo(
         repository,
@@ -354,7 +353,7 @@ def notetype(nt: dict[str, Any]) -> Notetype:
     except KeyError as err:
         raise UnnamedNotetypeError(nt) from err
     try:
-        fields: dict[int, Field] = {fld["ord"]: M.field(fld) for fld in nt["flds"]}
+        fields: dict[int, Field] = {fld["ord"]: field(fld) for fld in nt["flds"]}
         if nt["sortf"] not in fields:
             raise MissingFieldOrdinalError(ord=nt["sortf"], model=nt["name"])
         return Notetype(
@@ -362,7 +361,7 @@ def notetype(nt: dict[str, Any]) -> Notetype:
             name=nt["name"],
             type=nt["type"],
             flds=list(fields.values()),
-            tmpls=list(map(M.template, nt["tmpls"])),
+            tmpls=list(map(template, nt["tmpls"])),
             sortf=fields[nt["sortf"]],
             dict=nt,
         )
@@ -377,7 +376,7 @@ def colnote(col: Collection, nid: int) -> ColNote:
         note = col.get_note(nid)
     except NotFoundError as err:
         raise MissingNoteIdError(nid) from err
-    nt: Notetype = M.notetype(note.note_type())
+    nt: Notetype = notetype(note.note_type())
 
     # Get sort field content. See comment where we subscript in the same way in
     # `push_note()`.
@@ -427,7 +426,7 @@ def deckfields(
 ) -> tuple[DeckId, str, list[Deck]]:
     """Get the deck id, name, and subdecks for `Deck`."""
     did = DeckId(node.deck_id)
-    children = [M.decknode(col, targetd, child) for child in node.children]
+    children = [decknode(col, targetd, child) for child in node.children]
     return did, col.decks.name(did), children
 
 
@@ -443,7 +442,7 @@ def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root:
     did = DeckId(root.deck_id)
     if did != 0:
         raise ValueError(f"Expected the root deck, got '{col.decks.name(did)}'")
-    _, name, children = M.deckfields(col, targetd, root)
+    _, name, children = deckfields(col, targetd, root)
     return Root(
         did=did,
         node=root,
@@ -458,8 +457,8 @@ def tree(col: Collection, targetd: Dir, root: DeckTreeNode) -> Root:
 @beartype
 def decknode(col: Collection, targetd: Dir, node: DeckTreeNode) -> Deck:
     """Get the deck directory and did for a deck node beneath the root deck."""
-    did, name, children = M.deckfields(col, targetd, node)
-    deckdir = M.deckd(name, targetd)
+    did, name, children = deckfields(col, targetd, node)
+    deckdir = deckd(name, targetd)
     mediadir: Dir = F.force_mkdir(deckdir / MEDIA)
     return Deck(
         did=did,
@@ -529,20 +528,20 @@ def submodules(r: git.Repo) -> dict[Path, Submodule]:
     """Map submodule relative roots to `Submodule`s."""
     sms: Iterable[git.Submodule] = r.submodules
     sms = filter(lambda sm: sm.exists() and sm.module_exists(), sms)
-    subs: Iterable[Submodule] = (M.submodule(r, sm) for sm in sms)
+    subs: Iterable[Submodule] = (submodule(r, sm) for sm in sms)
     return {s.rel_root: s for s in subs}
 
 
 @beartype
 def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
     """Replace all files in `r` with contents of `remote_root`."""
-    git_copy = F.copytree(F.gitd(r), M.nofile(F.mkdtemp() / "GIT"))
+    git_copy = F.copytree(F.gitd(r), nofile(F.mkdtemp() / "GIT"))
     r.close()
     root: NoFile = F.rmtree(F.root(r))
     del r
     root: Dir = F.copytree(remote_root, root)
 
-    r: git.Repo = M.repo(root)
+    r: git.Repo = repo(root)
     if unsub:
         r = F.unsubmodule(r)
     gitd: NoPath = F.rmtree(F.gitd(r))
@@ -550,7 +549,7 @@ def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
     F.copytree(git_copy, F.chk(gitd))
 
     # Note that we do not commit, so changes are in working tree.
-    r: git.Repo = M.repo(root)
+    r: git.Repo = repo(root)
     return r
 
 
