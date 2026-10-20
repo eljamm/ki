@@ -554,7 +554,7 @@ def get_note_path(colnote: ColNote, deck_dir: Dir, card_name: str = "") -> NoFil
         slug: str = f"{colnote.notetype.name}--{guidhex}"
 
         # Note IDs are in milliseconds.
-        dt = datetime.datetime.fromtimestamp(colnote.n.id / 1000.0)
+        dt = datetime.datetime.fromtimestamp(colnote.n.id / 1000.0).astimezone()
         slug += "--" + dt.strftime("%Y-%m-%d--%Hh-%Mm-%Ss")
         F.yellow(f"Slug for note with guid '{colnote.n.guid}' is empty...")
         F.yellow(f"Using hex representation of guid in filename: '{slug}'")
@@ -576,7 +576,7 @@ def get_note_path(colnote: ColNote, deck_dir: Dir, card_name: str = "") -> NoFil
 @beartype
 def backup(kirepo: KiRepo) -> int:
     """Backup collection to `.ki/backups`."""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d--%Hh-%Mm-%Ss")
+    timestamp = datetime.datetime.now().astimezone().strftime("%Y-%m-%d--%Hh-%Mm-%Ss")
     md5sum = F.md5(kirepo.col_file)
     name = f"{timestamp}--{md5sum}.anki2"
     backup_file = F.chk(kirepo.backups_dir / name)
