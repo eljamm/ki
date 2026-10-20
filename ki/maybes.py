@@ -193,10 +193,10 @@ def repo(root: Dir) -> git.Repo:
     """Read a git repo safely."""
     try:
         repository = git.Repo(root)
-    except git.InvalidGitRepositoryError as err:
+    except git.InvalidGitRepositoryError:
         # TODO: Make this error more descriptive. It currently sucks. A test
         # should be written for 'kirepo()' in which we return this error.
-        raise err
+        raise
     return repository
 
 
@@ -389,11 +389,11 @@ def colnote(col: Collection, nid: int) -> ColNote:
     # work with cards instead of notes.
     try:
         deck = col.decks.name(note.cards()[0].did)
-    except IndexError as err:
+    except IndexError:
         F.red(f"{note.cards() = }")
         F.red(f"{note.guid = }")
         F.red(f"{note.id = }")
-        raise err
+        raise
     return ColNote(
         n=note,
         new=False,

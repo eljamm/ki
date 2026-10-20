@@ -1327,9 +1327,9 @@ def _clone1(collection: str, directory: str = "") -> git.Repo:
         kirepo.repo.close()
         gc.collect()
         return kirepo.repo
-    except Exception as err:
-        cleanup(targetdir, new)
-        raise err
+    except Exception:
+        _ = cleanup(targetdir, new)
+        raise
 
 
 @beartype

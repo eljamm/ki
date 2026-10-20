@@ -602,7 +602,7 @@ def test_non_terminating_field_needs_at_least_two_trailing_newlines():
         tree2 = parser.parse(TWO_POST_NON_TERMINATING_FIELD_NEWLINES)
     except UnexpectedToken as err:
         debug_lark_error(TWO_POST_NON_TERMINATING_FIELD_NEWLINES, err)
-        raise err
+        raise
     transformer.transform(tree2)
 
 
@@ -856,10 +856,7 @@ def test_parser_handles_special_characters_in_guid():
     """In particular, does it allow colons?"""
     parser = get_parser()
     good = (NOTES_DIR / "special_characters_in_guid.md").read_text(encoding="UTF-8")
-    try:
-        parser.parse(good)
-    except UnexpectedToken as err:
-        raise err
+    _ = parser.parse(good)
 
 
 def test_parser_goods():
@@ -867,10 +864,7 @@ def test_parser_goods():
     parser = get_parser()
     goods = (NOTES_DIR / "good.md").read_text(encoding="UTF-8").split("---\n")
     for good in goods:
-        try:
-            parser.parse(good)
-        except UnexpectedToken as err:
-            raise err
+        _ = parser.parse(good)
 
 
 def test_transformer():
@@ -891,9 +885,9 @@ def test_transformer_goods():
         try:
             tree = parser.parse(good)
             transformer.transform(tree)
-        except (UnexpectedToken, VisitError) as err:
+        except (UnexpectedToken, VisitError):
             print(good)
-            raise err
+            raise
 
 
 def main():
