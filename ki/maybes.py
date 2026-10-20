@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Factory functions for safely handling errors in type construction."""
 
 # pylint: disable=invalid-name, missing-class-docstring, broad-except

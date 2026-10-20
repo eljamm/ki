@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Types for ki."""
 
 import dataclasses

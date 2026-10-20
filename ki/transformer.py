@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """A Lark transformer for the ki note grammar."""
 
 import re

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """Export decks to ``.apkg`` files."""
 
 import re
