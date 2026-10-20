@@ -39,8 +39,8 @@ import anki.collection  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import click
 import git
 from anki.cards import Card
-from anki.decks import DeckId
 from anki.collection import Collection, OpChangesWithId
+from anki.decks import DeckId
 from anki.errors import NotFoundError
 from anki.models import NotetypeDict
 from anki.notes import Note
@@ -74,8 +74,8 @@ from ki.types import (
     CollectionChecksumError,
     ColNote,
     Deck,
-    DeckNote,
     DeckCreationFailedError,
+    DeckNote,
     DeletedFileNotFoundWarning,
     Delta,
     DiffTargetFileNotFoundWarning,
