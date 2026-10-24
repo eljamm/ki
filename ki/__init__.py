@@ -206,6 +206,7 @@ def cp_repo(rev: Rev, suffix: str) -> git.Repo:
     # Copy the entire repo into a temp directory ending in `../suffix/`.
     target: NoFile = M.nofile(F.mkdtemp() / suffix)
     ephem = git.Repo(F.copytree(F.root(rev.repo), target))
+    M.disable_auto_maintenance(ephem)
 
     # Do a reset --hard to the given SHA.
     ephem.git.reset(rev.sha, hard=True)
@@ -1376,6 +1377,7 @@ def _clone2(
     # Write note files to disk.
     write_repository(col, targetdir, dotki, mediadir)
     repo, branch = F.init(targetdir)
+    M.disable_auto_maintenance(repo)
 
     # Store a checksum of the Anki collection file in the hashes file.
     append_md5sum(kidir, col_file.name, md5sum)
@@ -1463,7 +1465,7 @@ def _pull2(kirepo: KiRepo, col: Collection) -> Collection:
     # Create git remote pointing to `remote_repo`, which represents the current
     # state of the Anki SQLite3 database, and pull it into `lca_repo`.
     anki_remote = lca_repo.create_remote(REMOTE_NAME, str(F.gitd(remote_repo)))
-    anki_remote.fetch()
+    anki_remote.fetch(no_auto_maintenance=True, no_auto_gc=True)
 
     # Handle deleted files, preferring `theirs`.
     diffidx = lca_repo.commit("HEAD").diff(lca_repo.commit("FETCH_HEAD"))

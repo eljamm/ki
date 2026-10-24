@@ -532,6 +532,21 @@ def submodules(r: git.Repo) -> dict[Path, Submodule]:
 
 
 @beartype
+def disable_auto_maintenance(repo: git.Repo) -> None:
+    """
+    Disable Git's automatic maintenance for a temporary repository.
+
+    Commands such as `fetch` and `commit` may detach a `git maintenance run --auto`
+    process. That process can keep touching `.git/objects/` after the command
+    returns, racing with `rmtree()` when we discard the temporary repository.
+    """
+    with repo.config_writer() as config:
+        _ = config.set_value("maintenance", "auto", "false")
+        # Covers older Git versions that only check `gc.auto`.
+        config.set_value("gc", "auto", "0")
+
+
+@beartype
 def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
     """Replace all files in `r` with contents of `remote_root`."""
     git_copy = F.copytree(F.gitd(r), nofile(F.mkdtemp() / "GIT"))
@@ -541,6 +556,7 @@ def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
     root: Dir = F.copytree(remote_root, root)
 
     r: git.Repo = repo(root)
+    disable_auto_maintenance(r)
     if unsub:
         r = F.unsubmodule(r)
     gitd: NoPath = F.rmtree(F.gitd(r))
@@ -549,6 +565,7 @@ def gitcopy(r: git.Repo, remote_root: Dir, unsub: bool) -> git.Repo:
 
     # Note that we do not commit, so changes are in working tree.
     r: git.Repo = repo(root)
+    disable_auto_maintenance(r)
     return r
 
 

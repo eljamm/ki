@@ -1505,6 +1505,27 @@ def test_cp_repo_preserves_git_symlink_file_modes(tmpfs: None):
     mode = M.filemode(onesec_file)
     assert mode == 120000
 
+    # Temporary repositories must not spawn detached Git maintenance, which
+    # can race with deleting them.
+    with ephem.config_reader() as reader:
+        assert reader.get_value("maintenance", "auto") is False
+        assert reader.get_value("gc", "auto") == 0
+
+
+def test_clone2_disables_auto_maintenance(tmpfs: None):
+    """Can `_clone2()` spawn detached maintenance while we delete its repo?"""
+    MEDIACOL: SampleCollection = get_test_collection("media")
+    col = Collection(MEDIACOL.col_file)
+    targetdir = F.mksubdir(F.mkdtemp(), Path("clone2-maintenance"))
+
+    try:
+        repo, _ = _clone2(col, targetdir, "test clone", silent=True)
+        with repo.config_reader() as reader:
+            assert reader.get_value("maintenance", "auto") is False
+            assert reader.get_value("gc", "auto") == 0
+    finally:
+        col.close()
+
 
 def test_write_deck_node_cards_does_not_fail_due_to_special_characters_in_paths_on_windows(
     tmpfs: None,
