@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [0.0.20a](https://github.com/eljamm/ki/compare/v0.0.19a..v0.0.20a) - 2026-10-24
 
 ### Bug Fixes
 
@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - *nix:* Remove override functions from flake devShells - ([fe0c05c](https://github.com/eljamm/ki/commit/fe0c05c486c52f189d246a1133f136b9f916ff65))
 - Unnecessary map (C417) - ([2aee0d6](https://github.com/eljamm/ki/commit/2aee0d687474d1d8237b00c60ccd1b5044c7171c))
 - Call datetime with local timezone (DTZ006) - ([76a1f08](https://github.com/eljamm/ki/commit/76a1f08c9050aad6097fd66b629e24a3042fad5c))
+- Guard head.mako template module - ([c953f4b](https://github.com/eljamm/ki/commit/c953f4bb0d25e07fabb503c00f92fb0c7f75a00e))
+- Prevent Git maintenance from racing with temp repo cleanup - ([9cc41bd](https://github.com/eljamm/ki/commit/9cc41bdd74fa49eddb110e891c0b88a4903c2d5b))
 
 
 ### CI/CD
@@ -24,6 +26,11 @@ All notable changes to this project will be documented in this file.
 - Cache nix run - ([c3bf10e](https://github.com/eljamm/ki/commit/c3bf10ebb2acbc41434479ad72f9c36caa38cde4))
 
 
+### Documentation
+
+- Add preview target - ([095e198](https://github.com/eljamm/ki/commit/095e198d3b0510f89ba939957b65e68f01a46727))
+
+
 ### Features
 
 - *nix:* Add git hooks to shell environment - ([c6c387d](https://github.com/eljamm/ki/commit/c6c387d75b4b0be0e89f3435edc2c4b9f0fcc255))
@@ -33,10 +40,17 @@ All notable changes to this project will be documented in this file.
 - Add git-cliff and generate a changelog - ([9270e9f](https://github.com/eljamm/ki/commit/9270e9f3ac08a8b00f0e55cf69efcfcfc04a71ea))
 
 
+### Miscellaneous Tasks
+
+- Update CHANGELOG.md - ([652ec3f](https://github.com/eljamm/ki/commit/652ec3f8696416aaf064a2b23bdef6004991d80b))
+
+
 ### Other
 
 - *nix:* Add pinact; update and pin github actions - ([8675a4d](https://github.com/eljamm/ki/commit/8675a4d26621ec773f6ce99ab8dadc1725de4809))
 - Update uv.lock - ([8bd1b0e](https://github.com/eljamm/ki/commit/8bd1b0e1a8870853804f34e1985a1d683c1f02c2))
+- Add pdoc3; build documentation - ([604e8d1](https://github.com/eljamm/ki/commit/604e8d1c40889ab065d60ad3605a679fc8d2854d))
+- Bump version to `0.0.20a` - ([4c2f9d5](https://github.com/eljamm/ki/commit/4c2f9d5508a8d63b6f5d97ebaec6261cc27b436b))
 
 
 ### Refactors
