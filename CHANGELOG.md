@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Miscellaneous Tasks
+
+- Update CHANGELOG.md - ([53c65d2](https://github.com/eljamm/ki/commit/53c65d26249c6e7919f16695e886d0f92a5b92fd))
+
+
 ## [0.0.20a](https://github.com/eljamm/ki/compare/v0.0.19a..v0.0.20a) - 2026-10-24
 
 ### Bug Fixes
