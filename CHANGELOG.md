@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Other
+
+- Update uv.lock - ([5789d95](https://github.com/eljamm/ki/commit/5789d9592240ba7eeffba7adf4461e62dd2dda0c))
+
+
 ## [0.0.20a](https://github.com/eljamm/ki/compare/v0.0.19a..v0.0.20a) - 2026-10-24
 
 ### Bug Fixes
@@ -38,11 +45,6 @@ All notable changes to this project will be documented in this file.
 - *nix:* Add script to check pre-commit hook in CI - ([03a82b3](https://github.com/eljamm/ki/commit/03a82b3443758d412fe46d11442d3abaffe6a953))
 - Add NotGitRepoError - ([0f08829](https://github.com/eljamm/ki/commit/0f0882930e91c5e8f706e108044e54fa5fa961b8))
 - Add git-cliff and generate a changelog - ([9270e9f](https://github.com/eljamm/ki/commit/9270e9f3ac08a8b00f0e55cf69efcfcfc04a71ea))
-
-
-### Miscellaneous Tasks
-
-- Update CHANGELOG.md - ([652ec3f](https://github.com/eljamm/ki/commit/652ec3f8696416aaf064a2b23bdef6004991d80b))
 
 
 ### Other

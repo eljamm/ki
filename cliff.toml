@@ -96,6 +96,7 @@ commit_parsers = [
   { message = "^test", group = "Testing" },
   { message = "^ci", group = "CI/CD" },
 
+  { message = "^chore: Update CHANGELOG.md", skip = true },
   { message = "^chore", group = "Miscellaneous Tasks" },
   { message = "^treewide", group = "Miscellaneous Tasks" },
   { message = ".*", group = "Other" },
