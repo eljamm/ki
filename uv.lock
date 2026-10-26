@@ -427,7 +427,7 @@ wheels = [
 
 [[package]]
 name = "ki"
-version = "0.0.19a0"
+version = "0.0.20a0"
 source = { editable = "." }
 dependencies = [
     { name = "anki" },
