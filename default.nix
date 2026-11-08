@@ -34,8 +34,10 @@ let
     lazy-app = import inputs.lazy-apps { inherit pkgs; };
     mkLazyApp = drv: self.lazy-app.override { pkg = drv; };
 
+    devAnki = self.callPackage ./nix/pkgs/anki { };
     devPkgs = lib.filterAttrs (n: v: lib.isDerivation v) {
       ki = self.callPackage ./nix/pkgs/ki { inherit root; };
+      anki = self.mkLazyApp self.devAnki.wrapper;
     };
 
     overlays = {

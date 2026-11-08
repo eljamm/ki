@@ -2,6 +2,7 @@
   lib,
   pkgs,
   formatter,
+  devPkgs,
   ...
 }:
 {
@@ -11,9 +12,10 @@
     ];
 
     packages = with pkgs; [
-      git-cliff # changelog
+      devPkgs.anki # lazy, so only downloaded when needed
       formatter.hooks.pre-commit.script
       formatter.package
+      git-cliff # changelog
       gitMinimal
       pinact
       uv
