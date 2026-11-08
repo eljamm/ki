@@ -8,6 +8,9 @@
 
     git-hooks.url = "github:cachix/git-hooks.nix";
     git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+
+    lazy-apps.url = "github:eljamm/lazy-apps";
+    lazy-apps.flake = false;
   };
 
   # import flake attributes from ./nix/flake/default.nix

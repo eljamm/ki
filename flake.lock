@@ -55,6 +55,22 @@
         "type": "github"
       }
     },
+    "lazy-apps": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793490141,
+        "narHash": "sha256-YwO/a83UUWKeKMZ1MpQoeffIikcOevrurlaWW267Vxg=",
+        "owner": "eljamm",
+        "repo": "lazy-apps",
+        "rev": "d425d2135769bd6c8ffbbeb437f128e47b6598bc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "eljamm",
+        "repo": "lazy-apps",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1792121332,
@@ -72,6 +88,7 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "git-hooks": "git-hooks",
+        "lazy-apps": "lazy-apps",
         "nixpkgs": "nixpkgs",
         "treefmt-nix": "treefmt-nix"
       }

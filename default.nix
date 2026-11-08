@@ -30,6 +30,10 @@ let
     formatter = self.callPackage ./nix/formatter.nix { };
     shells = self.callPackage ./nix/shells.nix { };
 
+    # makes packages lazy, so they're only downloaded when needed
+    lazy-app = import inputs.lazy-apps { inherit pkgs; };
+    mkLazyApp = drv: self.lazy-app.override { pkg = drv; };
+
     devPkgs = lib.filterAttrs (n: v: lib.isDerivation v) {
       ki = self.callPackage ./nix/pkgs/ki { inherit root; };
     };
