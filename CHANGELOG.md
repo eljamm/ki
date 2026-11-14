@@ -4,9 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### CI/CD
+
+- Disable fail-fast in tests - ([0ca0040](https://github.com/eljamm/ki/commit/0ca0040e6a4d071ef21b57b322bc102d4d80b18d))
+
+
+### Miscellaneous Tasks
+
+- Skip changelog-updating commits in changelog - ([6b0fbe0](https://github.com/eljamm/ki/commit/6b0fbe07a30e82f7c13be4b0c0a57a901fcc533f))
+
+
 ### Other
 
+- *nix:* Add lazy-apps - ([aa91018](https://github.com/eljamm/ki/commit/aa910180600c83d54fe1180821899c8422789557))
+- *nix:* Add custom anki package - ([53cd94c](https://github.com/eljamm/ki/commit/53cd94c745cc5068e43ddc7906fb1ede76092028))
 - Update uv.lock - ([5789d95](https://github.com/eljamm/ki/commit/5789d9592240ba7eeffba7adf4461e62dd2dda0c))
+- Update dependencies - ([80267b4](https://github.com/eljamm/ki/commit/80267b4e237ff4cbbfad58ca5dba98fcff77e858))
+- Ignore .dev/ directory - ([9212533](https://github.com/eljamm/ki/commit/9212533cc7bb26beb3543982acb1ccd74c6fd237))
 
 
 ## [0.0.20a](https://github.com/eljamm/ki/compare/v0.0.19a..v0.0.20a) - 2026-10-24
